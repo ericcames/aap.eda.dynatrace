@@ -1,0 +1,24 @@
+---
+# Scaffold rulebook — Dynatrace problems, pull model. See ROADMAP Phase 3.
+# Plugin args verified against github.com/Dynatrace/Dynatrace-EventDrivenAnsible.
+# Secrets are provided as env vars / EDA credential: DT_API_HOST, DT_API_TOKEN.
+# Start with a NOTIFY-ONLY action (Phase 3) before wiring real remediation.
+- name: React to Dynatrace problems
+  hosts: all
+  sources:
+    - dynatrace.event_driven_ansible.dt_esa_api:
+        dt_api_host: "{{ DT_API_HOST }}"
+        dt_api_token: "{{ DT_API_TOKEN }}"
+        delay: 60
+        # proxy: "{{ DT_PROXY }}"  # uncomment if OpenShift egress needs a proxy
+  rules:
+    - name: Launch remediation on a matching open problem
+      # Events are flat: match event.title / event.status (not event.problem.*).
+      condition: event.status == "OPEN" and event.title is match("CPU saturation")
+      # TODO Phase 4: guard re-trigger while the problem stays OPEN
+      # (throttle once_within keyed on the problem id) so this does not relaunch
+      # every `delay` seconds. Validate the real event shape first.
+      action:
+        run_job_template:
+          name: "Remediate - <service>"
+          organization: "Default"

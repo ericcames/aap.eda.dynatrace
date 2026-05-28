@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# docs/dev-environment.sh — GITIGNORED, never commit
+#
+# Copy this file (highlight and paste to terminal):
+#   cp docs/dev-environment.sh.example docs/dev-environment.sh
+#
+# Fill in your values, then source it in the SAME shell as the command, e.g.:
+#
+#   source docs/dev-environment.sh && \
+#   ansible-rulebook --rulebook rulebooks/dynatrace_problems.yml \
+#     -i localhost --env-vars DT_API_HOST,DT_API_TOKEN
+#
+# All exports and the command must be in one shell invocation — env vars do
+# not persist across separate terminal commands or tool calls.
+
+# --- Dynatrace (dev tenant) ------------------------------------------------
+# API host is the `live` host, NOT the `apps` UI host you log in to.
+# UI:  https://REPLACE_ME_ENV_ID.apps.dynatrace.com
+# API: https://REPLACE_ME_ENV_ID.live.dynatrace.com   <-- use this below
+export DT_API_HOST=https://REPLACE_ME_ENV_ID.live.dynatrace.com
+export DT_API_TOKEN=REPLACE_ME_DT_API_TOKEN        # scopes: Read problems + Write problems
+# export DT_PROXY=http://REPLACE_ME_PROXY:3128     # only if OpenShift egress needs a proxy
+
+# --- AAP (dev = Ansible Product Demos, 2.6) --------------------------------
+export AAP_HOSTNAME=https://REPLACE_ME_AAP_HOSTNAME
+export AAP_TOKEN=REPLACE_ME_AAP_TOKEN              # personal API token; delete after use
+export AAP_VALIDATE_CERTS=false                    # set true for a trusted cert
+export CONTROLLER_HOST=$AAP_HOSTNAME
+export CONTROLLER_OAUTH_TOKEN=$AAP_TOKEN
+export CONTROLLER_VERIFY_SSL=false

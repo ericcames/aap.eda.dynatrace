@@ -1,0 +1,8 @@
+---
+# Collections required by the EDA rulebook + decision environment.
+# Install with: ansible-galaxy collection install -r collections/requirements.yml
+# (uses your ~/.ansible.cfg Hub token — see ansible.cfg.example).
+collections:
+  - name: dynatrace.event_driven_ansible
+    # Pin a version once verified against the dev AAP decision environment (ROADMAP Phase 2).
+    # version: ">=1.0.0"

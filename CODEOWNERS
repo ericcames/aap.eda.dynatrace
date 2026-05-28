@@ -1,0 +1,14 @@
+# Code owners for aap.eda.dynatrace.
+# GitHub requests review from these owners when matching paths change.
+
+# Catch-all
+*                       @ericcames
+
+# Event-Driven Ansible content
+/rulebooks/             @ericcames
+/collections/           @ericcames
+
+# Governance + docs
+/docs/                  @ericcames
+/ROADMAP.md             @ericcames
+/CLAUDE.md              @ericcames
