@@ -17,3 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Community health files: `LICENSE` (MIT), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CLAUDE.md`, `CODEOWNERS`, `.github/` (SECURITY, issue templates, PR template)
 - CI (`.github/workflows/ci.yml`): required-files check, `yamllint`, and guards that the secrets file and real tenant id are never committed
 - `.yamllint` lint config
+
+### Changed
+- `docs/dev-environment.sh.example` — AAP auth now mirrors the dc1.azure method:
+  mint a short-lived token from the admin username/password at run time (deleted
+  afterward), with a UI-minted `AAP_TOKEN` kept only as an SSO/MFA escape hatch
