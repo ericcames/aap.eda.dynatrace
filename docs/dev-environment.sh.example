@@ -22,9 +22,18 @@ export DT_API_TOKEN=REPLACE_ME_DT_API_TOKEN        # scopes: Read problems + Wri
 # export DT_PROXY=http://REPLACE_ME_PROXY:3128     # only if OpenShift egress needs a proxy
 
 # --- AAP (dev = Ansible Product Demos, 2.6) --------------------------------
+# Mint a short-lived token from the admin username/password below at run time
+# and delete it afterward — no stored token to go stale (the dc1.azure method).
 export AAP_HOSTNAME=https://REPLACE_ME_AAP_HOSTNAME
-export AAP_TOKEN=REPLACE_ME_AAP_TOKEN              # personal API token; delete after use
-export AAP_VALIDATE_CERTS=false                    # set true for a trusted cert
+export AAP_VALIDATE_CERTS=false                     # set true for a trusted cert
+export AAP_CONTROLLER_USERNAME=admin
+export AAP_CONTROLLER_PASSWORD=REPLACE_ME_AAP_ADMIN_PASSWORD
+
+# OPTIONAL escape hatch — only for an SSO/MFA AAP where username/password
+# minting is blocked. UI-mint a Write token; it's used as-is and NOT deleted.
+# export AAP_TOKEN=REPLACE_ME_AAP_TOKEN
+
+# Required separately — ansible.controller.* async workers read these directly.
 export CONTROLLER_HOST=$AAP_HOSTNAME
-export CONTROLLER_OAUTH_TOKEN=$AAP_TOKEN
+export CONTROLLER_OAUTH_TOKEN=${AAP_TOKEN:-}
 export CONTROLLER_VERIFY_SSL=false
