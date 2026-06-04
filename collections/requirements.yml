@@ -1,8 +1,30 @@
 ---
-# Collections required by the EDA rulebook + decision environment.
+# Collections for the CaC CONTROL NODE (running aap_config/load.yml locally).
 # Install with: ansible-galaxy collection install -r collections/requirements.yml
-# (uses your ~/.ansible.cfg Hub token — see ansible.cfg.example).
+# Uses ~/.ansible.cfg (server_list = rh_certified, rh_validated, community) so Red
+# Hat certified/validated content is pulled first — see ansible.cfg.example.
+#
+# NOTE: the DECISION ENVIRONMENT image has its own, minimal galaxy list in
+# decision-environment-requirements.yml — keep the two separate.
 collections:
+  # The dt_esa_api source plugin. CERTIFIED + signed on Automation Hub (published
+  # repo, namespace dynatrace). Needed locally for `ansible-rulebook` smoke tests
+  # of rulebooks/dynatrace_problems.yml. Pinned to match the DE.
   - name: dynatrace.event_driven_ansible
-    # Pin a version once verified against the dev AAP decision environment (ROADMAP Phase 2).
-    # version: ">=1.0.0"
+    version: 1.2.3
+
+  # --- AAP Configuration as Code + supporting collections (mirrors dc1.azure) --
+  - name: infra.aap_configuration
+    version: 4.4.0
+  - name: ansible.platform
+    version: 2.6.20251106
+  - name: ansible.controller
+    version: 4.7.8
+  - name: ansible.eda
+    version: 2.5.0
+  - name: ansible.hub
+    version: 1.0.4
+  - name: ansible.utils
+    version: 6.0.1
+  - name: ansible.posix
+    version: 2.1.0

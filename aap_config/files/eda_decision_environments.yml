@@ -1,0 +1,15 @@
+---
+# Consumed by the infra.aap_configuration.eda_decision_environments role.
+# Registers the DT-EDA decision environment in EDA so the rulebook activation can
+# run in it. The image is the PAH copy at the pinned IMMUTABLE semver tag
+# (group_vars/all.yml: de_image → <ah_hostname>/dt_eda_de:<ee_version>), synced
+# from quay.io by hub_ee_repositories.yml. EDA pulls it using the DT-EDA - Hub
+# Registry credential.
+#   For a Hub-less smoke test, set DT_EDA_DE_IMAGE=quay.io/zigfreed/dt-eda-de:latest
+#   (public — no credential needed) and the activation will pull direct from quay.
+eda_decision_environments:
+  - name: "{{ eda_decision_environment }}"
+    description: "DT-EDA DE {{ ee_version }} — dt_esa_api source (dynatrace.event_driven_ansible 1.2.3)"
+    image_url: "{{ de_image }}"
+    organization: "{{ my_organization }}"
+    credential: "{{ eda_hub_registry_credential }}"

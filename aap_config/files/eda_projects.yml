@@ -1,0 +1,12 @@
+---
+# Consumed by the infra.aap_configuration.eda_projects role.
+# Syncs this repo's rulebooks/ so the activation can run dynatrace_problems.yml.
+# Public GitHub repo → no SCM credential. sync: true pulls the rulebook on apply
+# (it must already be on the configured branch — default main).
+eda_projects:
+  - name: "{{ eda_project_name }}"
+    description: "Dynatrace pull rulebooks (dt_esa_api → notify/remediate)"
+    url: "{{ dt_eda_scm_url }}"
+    scm_branch: "{{ dt_eda_scm_branch }}"
+    organization: "{{ my_organization }}"
+    sync: true
