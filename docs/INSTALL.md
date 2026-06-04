@@ -26,8 +26,11 @@ matching problem opens. Architecture: [`architecture.md`](architecture.md).
 2. **Dynatrace SaaS tenant** + two API tokens (Dynatrace → **Access Tokens →
    Generate**):
    - **Polling token** — scopes **Read problems** + **Write problems**.
-   - **Test-problem token** — scope **Ingest events** (`events.ingest`) — only for
-     raising synthetic problems on demand.
+   - **Test-problem token** — scope **Ingest events** (`events.ingest`) — for
+     raising synthetic problems on demand (CLI or the `DT-EDA - Raise Test Problem`
+     JT). The automated path stores it in the `DT-EDA - Dynatrace Events Ingest`
+     credential, so export `DT_API_EVENT_TOKEN` **before** applying `load.yml` or
+     that credential is created empty.
    - API host is the **`live`** host: `https://<env-id>.live.dynatrace.com`
      (not the `apps` UI host).
 
@@ -199,6 +202,57 @@ project `DT-EDA`, inventory `DT-EDA`, playbook `playbooks/notify_problem.yml`,
 
 ![aap-notify-jt.png](images/aap-notify-jt.png)
 
+### 5b. GUI trigger (optional): raise test problems from AAP
+Lets an operator open a synthetic Dynatrace problem from the AAP UI — the
+in-platform equivalent of `playbooks/raise_test_problem.yml`, for demos and
+operators without shell access. Mirrors the EDA Dynatrace credential type, but on
+the **Controller** side and injecting **env vars** (the playbook reads them via
+`ansible.builtin.env`), with a **separate `events.ingest` token**.
+
+**Automation Execution → Infrastructure → Credential Types → Create credential type.**
+- Name: `DT-EDA - Dynatrace Events Ingest`
+- Input configuration (YAML):
+  ```yaml
+  fields:
+    - id: DT_API_HOST
+      type: string
+      label: Dynatrace API host
+    - id: DT_API_EVENT_TOKEN
+      type: string
+      label: Dynatrace events.ingest token
+      secret: true
+  required: [DT_API_HOST, DT_API_EVENT_TOKEN]
+  ```
+- Injector configuration (YAML) — **`env`**, not `extra_vars`:
+  ```yaml
+  env:
+    DT_API_HOST: "{{ DT_API_HOST }}"
+    DT_API_EVENT_TOKEN: "{{ DT_API_EVENT_TOKEN }}"
+  ```
+
+**Automation Execution → Infrastructure → Credentials → Create credential.**
+- `DT-EDA - Dynatrace Events Ingest` — type `DT-EDA - Dynatrace Events Ingest`;
+  set `DT_API_HOST` = your `https://<env-id>.live.dynatrace.com` and
+  `DT_API_EVENT_TOKEN` = the **events.ingest** token (separate from the polling token).
+
+**Automation Execution → Templates → Create job template.**
+- Name: `DT-EDA - Raise Test Problem`; project `DT-EDA`; inventory `DT-EDA`;
+  playbook `playbooks/raise_test_problem.yml`
+- Credentials: attach `DT-EDA - Dynatrace Events Ingest`
+- **Survey** (enable it) — three questions; the answers arrive as extra_vars and
+  override the playbook's env-lookup defaults:
+
+  | Prompt | Variable | Type | Default |
+  |--------|----------|------|---------|
+  | Problem title | `dt_synthetic_title` | Multiple Choice (`DT-EDA Synthetic`, `High Disk Usage`) | `DT-EDA Synthetic` |
+  | Entity selector (optional) | `dt_entity_selector` | Text | *(blank)* |
+  | Auto-expire (minutes) | `dt_event_timeout_minutes` | Integer | `15` |
+
+Launch it from **Templates → `DT-EDA - Raise Test Problem`** to open a problem on
+demand — no shell required. The survey prompts at launch:
+
+![aap-raise-test-survey.png](images/aap-raise-test-survey.png)
+
 ### 6. Rulebook activation (the polling loop)
 **Automation Decisions → Rulebook Activations → Create rulebook activation.**
 - Name: `DT-EDA - Problem Remediation`
@@ -224,11 +278,18 @@ A *pull* activation has **no run button** — it polls automatically. You trigge
 the integration by making a problem appear in Dynatrace.
 
 **Trigger (Dynatrace):**
-- *Quick / on-demand:* `source docs/dev-environment.sh && ansible-playbook playbooks/raise_test_problem.yml`
+- *Quick / on-demand (CLI):* `source docs/dev-environment.sh && ansible-playbook playbooks/raise_test_problem.yml`
   (ingests a CUSTOM_ALERT via the events.ingest token; opens a problem whose title
   contains `DT_MATCH_TITLE`).
+- *From the AAP GUI:* **Automation Execution → Templates → `DT-EDA - Raise Test
+  Problem` → Launch** — the survey picks title / entity selector / auto-expire.
+  Same effect as the CLI helper, no shell required (see §5b).
 - *Production pattern:* a Dynatrace **metric event** / threshold trips → Davis
   opens a problem. See [`DEMO.md`](DEMO.md) for both, side by side.
+
+A GUI-launched run shows the ingest result (`status: OK`) in its job output:
+
+![aap-raise-test-output.png](images/aap-raise-test-output.png)
 
 **Observe (AAP):**
 1. **Automation Decisions → Rulebook Activations → `DT-EDA - Problem Remediation`

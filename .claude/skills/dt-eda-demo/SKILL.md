@@ -49,6 +49,12 @@ and confirms the `DT-EDA - Notify` job fires. Requires DT-EDA already installed
    If no problem opens, set `DT_TEST_ENTITY_SELECTOR` (e.g. `type(HOST)`) and
    retry — some tenants need the event attached to an entity.
 
+   **GUI alternative (no shell):** launch the `DT-EDA - Raise Test Problem` JT in
+   AAP (**Automation Execution → Templates → Launch**); the survey picks the title
+   / entity selector / auto-expire. Same effect as the CLI — handy when the point
+   is to show the trigger happening inside AAP. The CLI is the primary scripted
+   path this skill drives.
+
 4. **Watch it fire.** Poll for a NEW `DT-EDA - Notify` job (id greater than the
    previous latest), within roughly one poll cycle (`DT_POLL_DELAY`, default 60s):
    ```bash
