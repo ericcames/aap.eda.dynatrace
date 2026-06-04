@@ -1,0 +1,14 @@
+---
+# Consumed by the infra.aap_configuration.controller_projects role.
+# The DT-EDA Controller project syncs THIS repo so the DT-EDA - Notify JT can run
+# playbooks/notify_problem.yml. Public GitHub repo → no SCM credential needed.
+controller_projects:
+  - name: "{{ project_name }}"
+    description: "Dynatrace → AAP EDA pull integration (rulebook + remediation playbooks)"
+    organization: "{{ my_organization }}"
+    scm_type: git
+    scm_url: "{{ dt_eda_scm_url }}"
+    scm_branch: "{{ dt_eda_scm_branch }}"
+    scm_update_on_launch: true
+    scm_clean: true
+    wait: true

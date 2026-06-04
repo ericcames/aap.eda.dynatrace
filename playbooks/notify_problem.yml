@@ -1,0 +1,31 @@
+---
+# ============================================================================
+# playbooks/notify_problem.yml — the NOTIFY-ONLY first action (ROADMAP Phase 3)
+# ============================================================================
+# Run by the "DT-EDA - Notify" job template when the rulebook matches an OPEN
+# Dynatrace problem. It does nothing destructive — it surfaces the problem in the
+# AAP job log so we can observe the real event payload safely before wiring any
+# remediation. Self-contained: localhost, no credentials, no external calls.
+#
+# The rulebook passes these extra_vars (see rulebooks/dynatrace_problems.yml):
+#   dt_problem_title, dt_problem_status, dt_problem_event (the full event dict)
+# ============================================================================
+- name: Notify on a Dynatrace problem
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    dt_problem_title: "(no title provided)"
+    dt_problem_status: "(no status provided)"
+    dt_problem_event: {}
+  tasks:
+    - name: Announce the matched problem
+      ansible.builtin.debug:
+        msg: >-
+          DT-EDA notify — Dynatrace problem matched:
+          title='{{ dt_problem_title }}' status='{{ dt_problem_status }}'.
+          This is notify-only (no remediation). See the full event below.
+
+    - name: Dump the full Dynatrace event for inspection
+      ansible.builtin.debug:
+        var: dt_problem_event

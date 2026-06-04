@@ -1,0 +1,76 @@
+---
+# ============================================================================
+# playbooks/raise_test_problem.yml — raise a synthetic Dynatrace problem on demand
+# ============================================================================
+# Demo / Phase-1 helper: POST a CUSTOM_ALERT event to the Dynatrace Events API v2
+# so a problem OPENS and the EDA pull loop has something to match. The event
+# title embeds DT_MATCH_TITLE so it matches the rulebook condition.
+#
+# Needs a token with the **Ingest events** (events.ingest) scope — SEPARATE from
+# the Read/Write-problems token the rulebook uses. Export it as DT_API_EVENT_TOKEN
+# in docs/dev-environment.sh.
+#
+# Run:
+#   source docs/dev-environment.sh && \
+#   ansible-playbook playbooks/raise_test_problem.yml
+#
+# Optional: set DT_TEST_ENTITY_SELECTOR to attach the event to a specific entity
+# (e.g. 'type(HOST)') if an environment-level CUSTOM_ALERT does not open a problem
+# in your tenant — tune once against the real tenant (Phase 1 exit gate).
+# ============================================================================
+- name: Raise a synthetic Dynatrace problem
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars:
+    dt_api_host: "{{ lookup('ansible.builtin.env', 'DT_API_HOST') }}"
+    dt_event_token: "{{ lookup('ansible.builtin.env', 'DT_API_EVENT_TOKEN') }}"
+    dt_match_title: "{{ lookup('ansible.builtin.env', 'DT_MATCH_TITLE') | default('DT-EDA Synthetic', true) }}"
+    dt_entity_selector: "{{ lookup('ansible.builtin.env', 'DT_TEST_ENTITY_SELECTOR') | default('', true) }}"
+    dt_event_timeout_minutes: "{{ lookup('ansible.builtin.env', 'DT_TEST_TIMEOUT') | default('15', true) | int }}"
+  tasks:
+    - name: Assert the ingest token is present
+      ansible.builtin.assert:
+        that:
+          - dt_event_token | length > 0
+          - dt_api_host | length > 0
+        fail_msg: >-
+          DT_API_HOST and DT_API_EVENT_TOKEN (events.ingest scope) must be set —
+          source docs/dev-environment.sh first.
+
+    - name: Build the event payload
+      ansible.builtin.set_fact:
+        dt_event_body: >-
+          {{
+            {
+              'eventType': 'CUSTOM_ALERT',
+              'title': dt_match_title ~ ' — ' ~ ('%Y-%m-%d %H:%M:%S' | strftime),
+              'timeout': dt_event_timeout_minutes,
+              'properties': {
+                'source': 'aap.eda.dynatrace',
+                'dt.event.description': 'Synthetic problem to demo the AAP EDA pull loop'
+              }
+            }
+            | combine({'entitySelector': dt_entity_selector} if (dt_entity_selector | length > 0) else {})
+          }}
+
+    - name: POST the CUSTOM_ALERT event to the Dynatrace Events API v2
+      ansible.builtin.uri:
+        url: "{{ dt_api_host }}/api/v2/events/ingest"
+        method: POST
+        headers:
+          Authorization: "Api-Token {{ dt_event_token }}"
+          Content-Type: application/json
+        body_format: json
+        body: "{{ dt_event_body }}"
+        status_code: [200, 201]
+        validate_certs: true
+      register: dt_ingest
+
+    - name: Show the ingest result (problem opens within a poll cycle)
+      ansible.builtin.debug:
+        msg: >-
+          Ingested CUSTOM_ALERT '{{ dt_match_title }}'. Result:
+          {{ dt_ingest.json | default(dt_ingest.content) }}.
+          Watch the DT-EDA - Problem Remediation activation and the
+          DT-EDA - Notify job template in AAP.

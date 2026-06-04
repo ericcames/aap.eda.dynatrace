@@ -1,0 +1,79 @@
+---
+# DT-EDA Decision Environment
+# ============================================================
+# The image the "DT-EDA - Problem Remediation" rulebook activation runs in. It
+# adds the CERTIFIED dynatrace.event_driven_ansible collection (the dt_esa_api
+# source plugin) to the Red Hat minimal RHEL9 DECISION-environment base so EDA
+# can poll the Dynatrace problems API in the pull model.
+#
+# BUILD (local):
+#   ansible-builder build -f decision-environment.yml \
+#                         -t dt-eda-de:latest --prune-images
+#
+# PREREQUISITES:
+#   - ansible-builder installed:  pip install ansible-builder
+#   - Logged in to Red Hat registry: podman login registry.redhat.io
+#   - ~/.ansible.cfg with Automation Hub offline token (see ansible.cfg.example)
+#     NOTE: must be a real file, not a symlink — ansible-builder's COPY/ADD does
+#     not follow symlinks. server_list = rh_certified, rh_validated, community so
+#     ansible-galaxy pulls Red Hat CERTIFIED/VALIDATED content first.
+#
+# PUSH (deliberate-update model — see docs/decision-environment.md):
+#   Tag with the NEXT immutable semver tag AND move latest, then push both
+#   (quay creds come from ~/.config/containers/auth.json):
+#     podman tag dt-eda-de:latest quay.io/zigfreed/dt-eda-de:vX.Y.Z
+#     podman tag dt-eda-de:latest quay.io/zigfreed/dt-eda-de:latest
+#     podman push --authfile ~/.config/containers/auth.json quay.io/zigfreed/dt-eda-de:vX.Y.Z
+#     podman push --authfile ~/.config/containers/auth.json quay.io/zigfreed/dt-eda-de:latest
+#   Bump rule: CVE-only rebuild → patch · +collection → minor · new base → major.
+#   Then bump `ee_version` in aap_config/group_vars/all.yml and re-apply load.yml;
+#   PAH re-syncs the new tag and EDA pulls it. The DT-EDA - DE is registered as
+#   Config-as-Code (aap_config/files/eda_decision_environments.yml) — no manual
+#   UI Add needed.
+#
+# ------------------------------------------------------------
+# BUILD PROVENANCE / CHANGE LOG (why this DE looks the way it does)
+# ------------------------------------------------------------
+# This is the ONLY decision-environment definition in this repo. Record every
+# notable change here. Collections come from decision-environment-requirements.yml.
+#
+#   2026-06-03 (v1.0.0) — initial DE. base de-minimal-rhel9:1.1.7-21 (AAP 2.6
+#     line) + CERTIFIED dynatrace.event_driven_ansible 1.2.3 (signed, published
+#     repo, namespace dynatrace) for the dt_esa_api source plugin. ansible.eda is
+#     already in the base; pinned in the galaxy file for reproducibility.
+# ============================================================
+
+version: 3
+
+images:
+  base_image:
+    name: registry.redhat.io/ansible-automation-platform-25/de-minimal-rhel9:1.1.7-21
+
+dependencies:
+  # Path relative to this file. Installs dynatrace.event_driven_ansible (+ deps).
+  galaxy: decision-environment-requirements.yml
+
+options:
+  package_manager_path: /usr/bin/microdnf
+
+# Injects your local ~/.ansible.cfg so ansible-galaxy authenticates to Automation
+# Hub and pulls Red Hat certified/validated content during the build. This src
+# path is LOCAL to the build machine — evaluated at build time only, never
+# committed. See ansible.cfg.example for the required format.
+additional_build_files:
+  - src: /home/eames/.ansible.cfg
+    dest: configs
+
+additional_build_steps:
+  prepend_base:
+    # Apply available OS errata to the base layer first — the single biggest
+    # lever on the Quay security-scan CVE count (the base is a point-in-time cut).
+    - RUN microdnf upgrade -y --nodocs --setopt=install_weak_deps=0 && microdnf clean all
+    # Create /etc/ansible/ so the prepend_galaxy ADD below lands correctly.
+    - RUN mkdir -p /etc/ansible/
+
+  prepend_galaxy:
+    # Make the Automation Hub cfg available to ansible-galaxy during collection
+    # install. The leading dot in .ansible.cfg is preserved by ansible-builder —
+    # the file lands at _build/configs/.ansible.cfg.
+    - ADD _build/configs/.ansible.cfg /etc/ansible/ansible.cfg

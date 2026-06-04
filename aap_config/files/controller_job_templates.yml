@@ -1,0 +1,23 @@
+---
+# Consumed by the infra.aap_configuration.controller_job_templates role.
+# NOTE: the role's list variable is `controller_templates` (not
+# `controller_job_templates`) — a known collection quirk.
+#
+# One JT for the notify-only first action (ROADMAP Phase 3): the rulebook's
+# run_job_template launches this when a matching Dynatrace problem appears. It
+# runs this repo's playbooks/notify_problem.yml, which just debugs the event —
+# lowest blast radius, no credentials, no external side effects. Real remediation
+# is added later (Phase 4+) behind a workflow approval node.
+#
+# Uses a stock Controller EE (default) — the notify playbook needs no special
+# collections. execution_environment is intentionally omitted so AAP uses the
+# org/global default EE.
+controller_templates:
+  - name: "{{ notify_template }}"
+    job_type: run
+    organization: "{{ my_organization }}"
+    inventory: "{{ inventory_name }}"
+    project: "{{ project_name }}"
+    playbook: playbooks/notify_problem.yml
+    # The rulebook passes the event fields as extra_vars; allow them through.
+    ask_variables_on_launch: true

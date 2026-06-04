@@ -1,0 +1,24 @@
+---
+# Consumed by the infra.aap_configuration.eda_rulebook_activations role.
+# Binds the rulebook (synced via the DT-EDA EDA project) to the DT-EDA - DE and
+# the Dynatrace + Controller credentials, so it can poll Dynatrace and launch the
+# notify JT. The match title is injected as an extra var so the rulebook condition
+# lives in CaC (group_vars/all.yml), not hard-coded in the rulebook.
+eda_rulebook_activations:
+  - name: "{{ eda_rulebook_activation_name }}"
+    project: "{{ eda_project_name }}"
+    organization: "{{ my_organization }}"
+    rulebook: dynatrace_problems.yml
+    decision_environment: "{{ eda_decision_environment }}"
+    extra_vars:
+      dt_match_title: "{{ dt_match_title }}"
+      dt_poll_delay: "{{ dt_poll_delay }}"
+      my_organization: "{{ my_organization }}"
+      notify_template: "{{ notify_template }}"
+    # EDA credentials: Dynatrace API (injects DT_API_HOST/DT_API_TOKEN) +
+    # Controller (lets run_job_template launch the notify JT).
+    eda_credentials:
+      - "{{ eda_dynatrace_credential }}"
+      - "{{ eda_controller_credential }}"
+    enabled: true
+    state: present

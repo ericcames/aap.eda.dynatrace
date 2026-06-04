@@ -1,0 +1,13 @@
+---
+# Consumed by three dispatch roles (in order): hub_ee_registry →
+# hub_ee_registry_index → hub_ee_registry_sync. All fire from
+# `hub_ee_registries` being defined; dispatch handles the ordering.
+#
+# Purpose: tell Private Automation Hub where to find the DT-EDA DE image so Hub
+# can sync it locally. The image (quay.io/zigfreed/dt-eda-de) is defined in
+# hub_ee_repositories.yml.
+hub_ee_registries:
+  - name: quay_io          # alphanumeric + underscores only (Hub name requirement)
+    url: https://quay.io
+    tls_validation: true
+    # No credentials needed — the dt-eda-de image is public on quay.io.

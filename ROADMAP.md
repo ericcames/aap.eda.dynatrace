@@ -80,27 +80,28 @@ Close the unknowns before building.
 
 **Exit criteria:** egress, token feasibility, EDA availability, and the first use case all confirmed.
 
-### Phase 1 — Dynatrace setup  ⬜
-- ⬜ Create the API token (**Read problems + Write problems**); record the tenant API host
+### Phase 1 — Dynatrace setup  🔄
+- ✅ Create the API token (**Read problems + Write problems**); record the tenant API host (`<env-id>.live`)
 - ⬜ Define a scoping strategy (a dedicated management zone or tag for the pilot)
-- ⬜ Establish a repeatable way to raise a synthetic test problem
-- ⬜ Smoke-test the token: `GET /api/v2/problems` returns 200
+- 🔄 Establish a repeatable way to raise a synthetic test problem ([`playbooks/raise_test_problem.yml`](playbooks/raise_test_problem.yml) — needs an `events.ingest` token; tune entity selector vs tenant)
+- ✅ Smoke-test the token: `GET /api/v2/problems` returns 200
 
 **Exit criteria:** token authenticates against the problems API; a test problem can be raised on demand.
 
-### Phase 2 — AAP 2.6 foundation (decision environment)  ⬜
-- ⬜ Build/extend a **decision environment** including `dynatrace.event_driven_ansible`; push to the DE registry
-- ⬜ Create the **credential** holding the Dynatrace token (injects `DT_API_TOKEN`)
-- ⬜ Create the **project** (this repo) for the rulebook
-- ⬜ If action = `run_job_template`: ensure the Controller JT + EDA→Controller link exist
+### Phase 2 — AAP 2.6 foundation (decision environment)  🔄
+- 🔄 Build/extend a **decision environment** including `dynatrace.event_driven_ansible`; push to quay + PAH sync ([`decision-environment.yml`](decision-environment.yml), [`docs/decision-environment.md`](docs/decision-environment.md))
+- 🔄 Create the **credential** holding the Dynatrace token (injects `DT_API_TOKEN`) — `DT-EDA - Dynatrace API` ([`aap_config/files/eda_credentials.yml`](aap_config/files/eda_credentials.yml))
+- 🔄 Create the **project** (this repo) for the rulebook — Controller + EDA `DT-EDA` projects
+- 🔄 If action = `run_job_template`: Controller JT (`DT-EDA - Notify`) + EDA→Controller credential exist
+- All of the above are now Config-as-Code under [`aap_config/`](aap_config/) — applied by `load.yml`
 
 **Exit criteria:** DE pullable in EDA, credential stored, project syncs, Controller target reachable.
 
-### Phase 3 — Rulebook & activation (notify-only)  ⬜
-- ⬜ Author the rulebook from [`rulebooks/dynatrace_problems.yml`](rulebooks/dynatrace_problems.yml)
-- ⬜ Point the first action at a benign notify/log job (observe the real event safely)
-- ⬜ Create and start the rulebook activation
-- ⬜ Tune the condition against the real event shape (`event.title` / `event.status`)
+### Phase 3 — Rulebook & activation (notify-only)  🔄
+- ✅ Author the rulebook ([`rulebooks/dynatrace_problems.yml`](rulebooks/dynatrace_problems.yml)) — notify-only action + re-trigger throttle
+- ✅ Point the first action at a benign notify/log job (`DT-EDA - Notify` → [`playbooks/notify_problem.yml`](playbooks/notify_problem.yml))
+- 🔄 Create and start the rulebook activation (`DT-EDA - Problem Remediation`, via `load.yml`)
+- ⬜ Tune the condition against the real event shape (`event.title` / `event.status`) in Automation Decisions
 
 **Exit criteria:** activation polls cleanly; a test problem produces an event with the expected fields.
 
@@ -163,6 +164,12 @@ To co-exist safely in a shared AAP instance, namespace objects with a `DT-EDA -`
 | 2026-05-28 | Plugin args / event shape **verified against upstream collection** | `dt_api_host`/`dt_api_token`/`delay`/`proxy`; flat `event.title`/`event.status`; token needs Read + Write problems |
 | 2026-05-28 | Secrets via gitignored **`docs/dev-environment.sh`**; commit only `.sh.example` | Sourceable in one shell call; keeps tokens + real tenant id out of this public repo |
 | 2026-05-28 | Mirror **`dc1.azure`** repo conventions                          | Canonical mature-repo template (ROADMAP shape, ansible.cfg.example, .yamllint, CLAUDE.md, CODEOWNERS) |
+| 2026-06-03 | Full **CaC** via `infra.aap_configuration` 4.4.0 dispatch (`aap_config/`) | Automated, idempotent, repeatable setup mirroring dc1.azure; one concern = one data file |
+| 2026-06-03 | DE delivered **Quay → PAH → EDA** (not pulled direct)            | Realistic operator/PAH path; immutable semver tag (`ee_version`), EDA pulls from internal Hub via registry cred |
+| 2026-06-03 | `dynatrace.event_driven_ansible` is **certified** (1.2.3, signed) | Pull from `rh_certified` per "certified/validated first"; pinned in DE + control-node requirements |
+| 2026-06-03 | First action = self-contained **`DT-EDA - Notify`** JT          | Notify-only, lowest blast radius; debugs the real event before any remediation is wired |
+| 2026-06-03 | Synthetic problems via **`events.ingest`** CUSTOM_ALERT          | Reliable on-demand test problem ([`playbooks/raise_test_problem.yml`](playbooks/raise_test_problem.yml)); separate token from the rulebook's |
+| 2026-06-03 | Demo rulebook SCM = **public GitHub** (no SCM cred)             | Simplest for APD; customers swap `DT_EDA_SCM_URL` for Bitbucket + an SCM credential |
 
 ---
 

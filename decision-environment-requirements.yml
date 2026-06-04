@@ -1,0 +1,12 @@
+---
+# Galaxy content baked into the DT-EDA Decision Environment (decision-environment.yml).
+# Kept SEPARATE from collections/requirements.yml (which carries the heavy CaC
+# stack for the control node) — the DE only needs the source plugin + ansible.eda.
+collections:
+  # The dt_esa_api source plugin (pull model). CERTIFIED + signed on Automation
+  # Hub (published repo, namespace dynatrace) — pulled from rh_certified via
+  # ~/.ansible.cfg. Pinned to the version verified against this AAP 2.6.
+  - name: dynatrace.event_driven_ansible
+    version: 1.2.3
+  # NOTE: ansible.eda is already in the de-minimal base — intentionally NOT listed
+  # here to avoid a version conflict with the base copy.

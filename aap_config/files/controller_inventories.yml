@@ -1,0 +1,8 @@
+---
+# Consumed by the infra.aap_configuration.controller_inventories role.
+# The DT-EDA - Notify JT runs a localhost play, so an empty inventory is
+# sufficient — AWX provides an implicit localhost.
+controller_inventories:
+  - name: "{{ inventory_name }}"
+    description: "DT-EDA control inventory (notify JT runs on localhost)"
+    organization: "{{ my_organization }}"

@@ -1,24 +1,47 @@
 ---
-# Scaffold rulebook — Dynatrace problems, pull model. See ROADMAP Phase 3.
-# Plugin args verified against github.com/Dynatrace/Dynatrace-EventDrivenAnsible.
-# Secrets are provided as env vars / EDA credential: DT_API_HOST, DT_API_TOKEN.
-# Start with a NOTIFY-ONLY action (Phase 3) before wiring real remediation.
-- name: React to Dynatrace problems
+# ============================================================================
+# rulebooks/dynatrace_problems.yml — Dynatrace problems, PULL model (Phase 3)
+# ============================================================================
+# The dt_esa_api source polls the Dynatrace problems API over outbound HTTPS and
+# emits an event per problem. On a matching OPEN problem this launches the
+# NOTIFY-ONLY job template "DT-EDA - Notify" (debugs the event) — real
+# remediation comes later (Phase 4+) behind a workflow approval node.
+#
+# Variables are injected by the rulebook activation
+# (aap_config/files/eda_rulebook_activations.yml), so this file carries NO
+# secrets and NO hard-coded match string:
+#   DT_API_HOST / DT_API_TOKEN  ← DT-EDA - Dynatrace API EDA credential
+#   dt_match_title / dt_poll_delay / notify_template / my_organization ← extra_vars
+#
+# EVENT SHAPE: the dt_esa_api event is flat — match event.title / event.status.
+# Inspect a real event in Automation Decisions and tune before hardening (the
+# Phase 3 exit gate). The certified collection (dynatrace.event_driven_ansible
+# 1.2.3, Automation Hub) is the source of truth for the shape.
+# ============================================================================
+- name: React to Dynatrace problems (pull)
   hosts: all
   sources:
     - dynatrace.event_driven_ansible.dt_esa_api:
         dt_api_host: "{{ DT_API_HOST }}"
         dt_api_token: "{{ DT_API_TOKEN }}"
-        delay: 60
+        delay: "{{ dt_poll_delay | default(60) | int }}"
         # proxy: "{{ DT_PROXY }}"  # uncomment if OpenShift egress needs a proxy
   rules:
-    - name: Launch remediation on a matching open problem
-      # Events are flat: match event.title / event.status (not event.problem.*).
-      condition: event.status == "OPEN" and event.title is match("CPU saturation")
-      # TODO Phase 4: guard re-trigger while the problem stays OPEN
-      # (throttle once_within keyed on the problem id) so this does not relaunch
-      # every `delay` seconds. Validate the real event shape first.
+    - name: Notify on a matching open problem
+      condition: event.status == "OPEN" and event.title is search(vars.dt_match_title)
+      # Re-trigger guard: an OPEN problem reappears on every poll. once_within +
+      # group_by_attributes collapses repeats so the notify JT fires at most once
+      # per problem title per window, not every `delay` seconds (ROADMAP Phase 4).
+      throttle:
+        once_within: 10 minutes
+        group_by_attributes:
+          - event.title
       action:
         run_job_template:
-          name: "Remediate - <service>"
-          organization: "Default"
+          name: "{{ notify_template }}"
+          organization: "{{ my_organization }}"
+          job_args:
+            extra_vars:
+              dt_problem_title: "{{ event.title }}"
+              dt_problem_status: "{{ event.status }}"
+              dt_problem_event: "{{ event }}"
