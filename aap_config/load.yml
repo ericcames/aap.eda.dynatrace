@@ -6,10 +6,10 @@
 # under files/ and applies them via the upstream infra.aap_configuration.dispatch
 # role, then verifies the result. Idempotent — every object is keyed by name.
 #
-# AUTH — self-managing token dance (no stored token required):
-#   Mints a short-lived WRITE token from AAP_CONTROLLER_USERNAME/PASSWORD, uses
-#   it for the whole apply + validate run, and deletes it in always:. A stored
-#   AAP_TOKEN (SSO/MFA escape hatch) is used as-is and left untouched.
+# AUTH — username/password basic auth (no token). The certified ansible.eda 2.5.0
+#   modules used by infra.aap_configuration's EDA roles reject controller_token, so
+#   we authenticate every call with AAP_CONTROLLER_USERNAME/PASSWORD. Nothing is
+#   stored. See aap_config/README.md §Auth.
 #
 # Prerequisites:
 #   - AAP reachable; AAP_CONTROLLER_USERNAME / AAP_CONTROLLER_PASSWORD exported
@@ -42,17 +42,85 @@
     - files/eda_projects.yml
     - files/eda_rulebook_activations.yml
   tasks:
-    - name: Apply + validate under a managed CaC token
+    # AUTH: username/password (basic auth), not a minted token. The certified
+    # ansible.eda 1.x/2.5 modules used by infra.aap_configuration's EDA roles do
+    # NOT accept controller_token — passing a token makes them fail with
+    # "Unsupported parameters: controller_token". So we leave aap_token empty
+    # (group_vars default) and authenticate every dispatch + validation call with
+    # AAP_CONTROLLER_USERNAME / AAP_CONTROLLER_PASSWORD. Nothing is stored.
+    - name: Apply all DT-EDA AAP objects
+      ansible.builtin.include_role:
+        name: infra.aap_configuration.dispatch
+
+    # WORKAROUND (certified ansible.eda 2.5.0): the decision_environment module
+    # accepts a `credential` arg but silently does NOT attach it, so the DE has no
+    # registry credential and the activation can't pull the image from PAH. Attach
+    # it via the EDA API here, then restart the activation if it isn't healthy so
+    # it retries the pull with the credential. Idempotent.
+    - name: Attach the registry credential to the decision environment
+      vars:
+        eda_api: "{{ aap_hostname }}/api/eda/v1"
       block:
-        - name: Acquire a write token (or adopt a supplied AAP_TOKEN)
-          ansible.builtin.import_tasks: tasks/aap_token_acquire.yml
+        - name: Look up the Hub Registry EDA credential id
+          ansible.builtin.uri:
+            url: "{{ eda_api }}/eda-credentials/?name={{ eda_hub_registry_credential | urlencode }}"
+            method: GET
+            url_username: "{{ aap_username }}"
+            url_password: "{{ aap_password }}"
+            force_basic_auth: true
+            validate_certs: "{{ aap_validate_certs }}"
+          register: dt_eda_hubcred
 
-        - name: Apply all DT-EDA AAP objects
-          ansible.builtin.include_role:
-            name: infra.aap_configuration.dispatch
+        - name: Look up the decision environment
+          ansible.builtin.uri:
+            url: "{{ eda_api }}/decision-environments/?name={{ eda_decision_environment | urlencode }}"
+            method: GET
+            url_username: "{{ aap_username }}"
+            url_password: "{{ aap_password }}"
+            force_basic_auth: true
+            validate_certs: "{{ aap_validate_certs }}"
+          register: dt_eda_de
 
-        - name: Verify DT-EDA AAP objects exist
-          ansible.builtin.import_tasks: validate_tasks.yml
-      always:
-        - name: Release the CaC token (only if we minted it)
-          ansible.builtin.import_tasks: tasks/aap_token_release.yml
+        - name: Set DE + credential id facts
+          ansible.builtin.set_fact:
+            dt_eda_de_id: "{{ (dt_eda_de.json.results | selectattr('name', 'equalto', eda_decision_environment) | first).id }}"
+            dt_eda_hubcred_id: "{{ (dt_eda_hubcred.json.results | selectattr('name', 'equalto', eda_hub_registry_credential) | first).id }}"
+
+        - name: Attach the credential to the DE (PATCH eda_credential_id)
+          ansible.builtin.uri:
+            url: "{{ eda_api }}/decision-environments/{{ dt_eda_de_id }}/"
+            method: PATCH
+            url_username: "{{ aap_username }}"
+            url_password: "{{ aap_password }}"
+            force_basic_auth: true
+            body_format: json
+            body:
+              eda_credential_id: "{{ dt_eda_hubcred_id | int }}"
+            status_code: [200]
+            validate_certs: "{{ aap_validate_certs }}"
+
+        - name: Look up the rulebook activation
+          ansible.builtin.uri:
+            url: "{{ eda_api }}/activations/?name={{ eda_rulebook_activation_name | urlencode }}"
+            method: GET
+            url_username: "{{ aap_username }}"
+            url_password: "{{ aap_password }}"
+            force_basic_auth: true
+            validate_certs: "{{ aap_validate_certs }}"
+          register: dt_eda_act
+
+        - name: Restart the activation if it is not running (so it retries the pull with the credential)
+          ansible.builtin.uri:
+            url: "{{ eda_api }}/activations/{{ (dt_eda_act.json.results | selectattr('name', 'equalto', eda_rulebook_activation_name) | first).id }}/restart/"
+            method: POST
+            url_username: "{{ aap_username }}"
+            url_password: "{{ aap_password }}"
+            force_basic_auth: true
+            status_code: [204]
+            validate_certs: "{{ aap_validate_certs }}"
+          when: >-
+            (dt_eda_act.json.results | selectattr('name', 'equalto', eda_rulebook_activation_name) | first).status
+            not in ['running', 'starting']
+
+    - name: Verify DT-EDA AAP objects exist
+      ansible.builtin.import_tasks: validate_tasks.yml

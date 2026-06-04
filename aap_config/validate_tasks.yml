@@ -51,8 +51,9 @@
   ansible.builtin.uri:
     url: "{{ aap_hostname }}{{ api_base }}/{{ item.endpoint }}/?name={{ item.name | urlencode }}"
     method: GET
-    headers:
-      Authorization: "Bearer {{ aap_token }}"
+    url_username: "{{ aap_username }}"
+    url_password: "{{ aap_password }}"
+    force_basic_auth: true
     validate_certs: "{{ aap_validate_certs }}"
     return_content: false
   register: object_checks
@@ -85,8 +86,9 @@
   ansible.builtin.uri:
     url: "{{ aap_hostname }}{{ eda_api_base }}/{{ item.endpoint }}/?name={{ item.name | urlencode }}&page_size=200"
     method: GET
-    headers:
-      Authorization: "Bearer {{ aap_token }}"
+    url_username: "{{ aap_username }}"
+    url_password: "{{ aap_password }}"
+    force_basic_auth: true
     validate_certs: "{{ aap_validate_certs }}"
     return_content: false
   register: eda_object_checks

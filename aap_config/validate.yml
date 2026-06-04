@@ -1,8 +1,8 @@
 ---
 # ============================================================================
 # Standalone validation wrapper — confirms the DT-EDA AAP objects exist without
-# re-running the apply. Mints its own short-lived token (deleted in always:) and
-# imports the shared validate_tasks.yml.
+# re-running the apply. Authenticates with username/password (see load.yml §AUTH)
+# and imports the shared validate_tasks.yml.
 #
 # Run:
 #   source docs/dev-environment.sh && \
@@ -27,13 +27,6 @@
     - files/eda_projects.yml
     - files/eda_rulebook_activations.yml
   tasks:
-    - name: Validate under a managed CaC token
-      block:
-        - name: Acquire a token (or adopt a supplied AAP_TOKEN)
-          ansible.builtin.import_tasks: tasks/aap_token_acquire.yml
-
-        - name: Verify DT-EDA AAP objects exist
-          ansible.builtin.import_tasks: validate_tasks.yml
-      always:
-        - name: Release the token (only if we minted it)
-          ansible.builtin.import_tasks: tasks/aap_token_release.yml
+    # AUTH: username/password (basic auth) — see load.yml for why no token.
+    - name: Verify DT-EDA AAP objects exist
+      ansible.builtin.import_tasks: validate_tasks.yml

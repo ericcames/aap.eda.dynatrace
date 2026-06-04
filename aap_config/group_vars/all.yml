@@ -9,16 +9,14 @@
 # ============================================================================
 
 # --- AAP API connection (consumed by infra.aap_configuration.dispatch) -------
-# aap_token is normally NOT set from a stored value: load.yml/validate.yml mint
-# a short-lived token from AAP_CONTROLLER_USERNAME/PASSWORD and overwrite this
-# fact at runtime (tasks/aap_token_acquire.yml), then delete it in always:. The
-# env lookup here is only the SSO/manual escape hatch.
+# Auth is username/password (basic). aap_token is intentionally left EMPTY: the
+# certified ansible.eda 2.5.0 modules reject controller_token, so a token breaks
+# the EDA roles. Keeping aap_token '' makes every role use aap_username/password.
 aap_hostname: "{{ lookup('ansible.builtin.env', 'AAP_HOSTNAME') }}"
-aap_token: "{{ lookup('ansible.builtin.env', 'AAP_TOKEN') | default('', true) }}"
+aap_token: ""
 aap_validate_certs: "{{ lookup('ansible.builtin.env', 'AAP_VALIDATE_CERTS') | default('false', true) | bool }}"
-# The infra.aap_configuration HUB roles (hub_ee_registry/repository/sync) auth to
-# Automation Hub with BASIC auth (ah_username/ah_password ← aap_username/password)
-# — they don't take a token. Controller/EDA roles use the short-lived aap_token.
+# Controller, EDA, and Hub (basic-auth ah_username/ah_password) roles all
+# authenticate with these.
 aap_username: "{{ lookup('ansible.builtin.env', 'AAP_CONTROLLER_USERNAME') | default('admin', true) }}"
 aap_password: "{{ lookup('ansible.builtin.env', 'AAP_CONTROLLER_PASSWORD') }}"
 
