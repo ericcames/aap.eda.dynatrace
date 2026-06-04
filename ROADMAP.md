@@ -97,11 +97,11 @@ Close the unknowns before building.
 
 **Exit criteria:** DE pullable in EDA, credential stored, project syncs, Controller target reachable.
 
-### Phase 3 — Rulebook & activation (notify-only)  🔄
+### Phase 3 — Rulebook & activation (notify-only)  ✅
 - ✅ Author the rulebook ([`rulebooks/dynatrace_problems.yml`](rulebooks/dynatrace_problems.yml)) — notify-only action + re-trigger throttle
 - ✅ Point the first action at a benign notify/log job (`DT-EDA - Notify` → [`playbooks/notify_problem.yml`](playbooks/notify_problem.yml))
-- 🔄 Create and start the rulebook activation (`DT-EDA - Problem Remediation`, via `load.yml`)
-- ⬜ Tune the condition against the real event shape (`event.title` / `event.status`) in Automation Decisions
+- ✅ Create and start the rulebook activation (`DT-EDA - Problem Remediation`, via `load.yml`) — verified firing end-to-end
+- ✅ Tune the condition against the **real** event shape: verified flat `event.*` (title, status, problemId, displayId, severityLevel, impactLevel, affectedEntities, managementZones); throttle now keyed on `event.problemId`
 
 **Exit criteria:** activation polls cleanly; a test problem produces an event with the expected fields.
 
