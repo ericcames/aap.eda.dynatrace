@@ -39,8 +39,15 @@
 #
 #   2026-06-03 (v1.0.0) — initial DE. base de-minimal-rhel9:1.1.7-21 (AAP 2.6
 #     line) + CERTIFIED dynatrace.event_driven_ansible 1.2.3 (signed, published
-#     repo, namespace dynatrace) for the dt_esa_api source plugin. ansible.eda is
-#     already in the base; pinned in the galaxy file for reproducibility.
+#     repo, namespace dynatrace) for the dt_esa_api source plugin. Two de-minimal
+#     quirks handled vs the dc1.azure ee-minimal recipe (both live-found):
+#       (1) ansible.eda's systemd-python C-extension can't rebuild in the
+#           de-minimal builder stage — excluded from reinstall (the base ships a
+#           working copy). See dependencies.exclude.python below.
+#       (2) `microdnf upgrade` pulls a newer python3 (3.9) RPM that flips the
+#           `python3` alternative away from 3.12 (where ansible-core lives),
+#           breaking check_ansible AND runtime ansible-rulebook — reasserted to
+#           3.12 in prepend_base.
 # ============================================================
 
 version: 3
@@ -52,6 +59,14 @@ images:
 dependencies:
   # Path relative to this file. Installs dynatrace.event_driven_ansible (+ deps).
   galaxy: decision-environment-requirements.yml
+  # ansible.eda (in the de-minimal base) declares systemd-python, a C extension.
+  # ansible-builder re-introspects it and tries to rebuild it from sdist, which
+  # fails in the de-minimal builder stage (no toolchain / py3.9 headers). The base
+  # already ships a working systemd-python for ansible.eda, so exclude it from the
+  # reinstall rather than dragging a compiler into the build.
+  exclude:
+    python:
+      - systemd-python
 
 options:
   package_manager_path: /usr/bin/microdnf
@@ -69,6 +84,11 @@ additional_build_steps:
     # Apply available OS errata to the base layer first — the single biggest
     # lever on the Quay security-scan CVE count (the base is a point-in-time cut).
     - RUN microdnf upgrade -y --nodocs --setopt=install_weak_deps=0 && microdnf clean all
+    # The upgrade pulls a newer python3 (3.9) RPM, which flips the `python3`
+    # alternative away from 3.12 — but ansible-core lives ONLY in python3.12's
+    # site-packages. Left unfixed this breaks check_ansible at build time AND
+    # ansible-rulebook at runtime (both resolve /usr/bin/python3). Reassert 3.12.
+    - RUN alternatives --set python3 /usr/bin/python3.12
     # Create /etc/ansible/ so the prepend_galaxy ADD below lands correctly.
     - RUN mkdir -p /etc/ansible/
 

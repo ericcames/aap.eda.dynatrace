@@ -34,6 +34,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Dynatrace Events API v2 (`events.ingest` token)
 - `docs/decision-environment.md` — DE build/push/PAH-sync runbook
 
+### Fixed
+- `decision-environment.yml` — make the DE actually build on `de-minimal-rhel9`:
+  exclude `systemd-python` from reinstall (the base copy is fine; it can't rebuild
+  in the de-minimal builder stage), and reassert the `python3` alternative to 3.12
+  after `microdnf upgrade` (the upgrade flips it to 3.9, which has no ansible —
+  breaking the build check and runtime `ansible-rulebook`)
+
 ### Changed
 - `collections/requirements.yml` — pin `dynatrace.event_driven_ansible 1.2.3`
   (certified) and add the `infra.aap_configuration` 4.4.0 CaC collection stack
