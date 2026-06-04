@@ -248,6 +248,10 @@ the **Controller** side and injecting **env vars** (the playbook reads them via
   | Entity selector (optional) | `dt_entity_selector` | Text | *(blank)* |
   | Auto-expire (minutes) | `dt_event_timeout_minutes` | Integer | `15` |
 
+The finished job template:
+
+![aap-raise-test-jt.png](images/aap-raise-test-jt.png)
+
 Launch it from **Templates → `DT-EDA - Raise Test Problem`** to open a problem on
 demand — no shell required. The survey prompts at launch:
 
