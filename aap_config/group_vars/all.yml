@@ -48,6 +48,11 @@ de_upstream_name: zigfreed/dt-eda-de
 # from quay.io (hub_ee_registries.yml / hub_ee_repositories.yml). Override
 # DT_EDA_DE_IMAGE with the public quay.io URL for a Hub-less smoke test.
 de_image: "{{ lookup('ansible.builtin.env', 'DT_EDA_DE_IMAGE') | default(ah_hostname ~ '/' ~ hub_de_name ~ ':' ~ ee_version, true) }}"
+# DE pull policy. `missing` is correct for the immutable semver tag (pull once,
+# reuse the cached layer — no ~900 MB re-pull every activation start). Set via the
+# EDA API in load.yml (the eda_decision_environments module doesn't expose it).
+# Choices: always | missing | never.
+de_pull_policy: "{{ lookup('ansible.builtin.env', 'DT_EDA_DE_PULL_POLICY') | default('missing', true) }}"
 
 # --- Dynatrace (pull source) -------------------------------------------------
 # API host is the `live` host. Token needs Read + Write problems (poll +

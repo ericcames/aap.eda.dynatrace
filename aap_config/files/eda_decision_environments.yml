@@ -7,6 +7,10 @@
 # Registry credential.
 #   For a Hub-less smoke test, set DT_EDA_DE_IMAGE=quay.io/zigfreed/dt-eda-de:latest
 #   (public — no credential needed) and the activation will pull direct from quay.
+# NOTE: the certified ansible.eda 2.5.0 decision_environment module ignores
+# `credential` and has no `pull_policy` field — load.yml sets both via the EDA API
+# after dispatch (eda_credential_id + pull_policy=missing). Keep `credential` here
+# for intent/portability to a fixed module.
 eda_decision_environments:
   - name: "{{ eda_decision_environment }}"
     description: "DT-EDA DE {{ ee_version }} — dt_esa_api source (dynatrace.event_driven_ansible 1.2.3)"

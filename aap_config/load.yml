@@ -86,7 +86,10 @@
             dt_eda_de_id: "{{ (dt_eda_de.json.results | selectattr('name', 'equalto', eda_decision_environment) | first).id }}"
             dt_eda_hubcred_id: "{{ (dt_eda_hubcred.json.results | selectattr('name', 'equalto', eda_hub_registry_credential) | first).id }}"
 
-        - name: Attach the credential to the DE (PATCH eda_credential_id)
+        - name: Attach the registry credential + set pull policy on the DE (PATCH)
+          # The eda_decision_environments module exposes neither eda_credential nor
+          # pull_policy, so set both via the API. pull_policy=missing is correct for
+          # the immutable semver tag (pull once, reuse cache — no re-pull per run).
           ansible.builtin.uri:
             url: "{{ eda_api }}/decision-environments/{{ dt_eda_de_id }}/"
             method: PATCH
@@ -96,6 +99,7 @@
             body_format: json
             body:
               eda_credential_id: "{{ dt_eda_hubcred_id | int }}"
+              pull_policy: "{{ de_pull_policy | default('missing') }}"
             status_code: [200]
             validate_certs: "{{ aap_validate_certs }}"
 

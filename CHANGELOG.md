@@ -66,6 +66,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   (`my_organization`, override via `DT_EDA_ORG`)
 - `DT-EDA` controller project: `scm_update_on_launch: false` — the rulebook/
   playbooks are stable, so no git re-pull on every Notify launch
+- Decision environment `pull_policy: missing` (was `always`) — correct for the
+  immutable semver tag; set via the EDA API in `load.yml` (`de_pull_policy`,
+  override `DT_EDA_DE_PULL_POLICY`)
 - `collections/requirements.yml` — pin `dynatrace.event_driven_ansible 1.2.3`
   (certified) and add the `infra.aap_configuration` 4.4.0 CaC collection stack
 - `rulebooks/dynatrace_problems.yml` — notify-only `run_job_template` action with
