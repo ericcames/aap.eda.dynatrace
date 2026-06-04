@@ -60,6 +60,10 @@ de_pull_policy: "{{ lookup('ansible.builtin.env', 'DT_EDA_DE_PULL_POLICY') | def
 # EDA credential — never inline in the rulebook.
 dt_api_host: "{{ lookup('ansible.builtin.env', 'DT_API_HOST') }}"
 dt_api_token: "{{ lookup('ansible.builtin.env', 'DT_API_TOKEN') }}"
+# SEPARATE events.ingest-scoped token used ONLY to raise synthetic problems
+# (playbooks/raise_test_problem.yml). Injected as an env var into the GUI-launched
+# DT-EDA - Raise Test Problem JT via the DT-EDA - Dynatrace Events Ingest credential.
+dt_api_event_token: "{{ lookup('ansible.builtin.env', 'DT_API_EVENT_TOKEN') }}"
 # The rulebook condition matches OPEN problems whose title contains this string.
 # Injected into the activation as an extra var so the match lives in CaC. The
 # synthetic test problem (playbooks/raise_test_problem.yml) uses this exact title.
@@ -79,6 +83,11 @@ project_name: "DT-EDA"
 inventory_name: "DT-EDA"
 notify_template: "DT-EDA - Notify"
 cred_hub_registry: "DT-EDA - Hub Registry"
+# GUI trigger: JT + the custom credential type/credential that inject the
+# events.ingest host + token as env vars for playbooks/raise_test_problem.yml.
+raise_test_template: "DT-EDA - Raise Test Problem"
+cred_dt_events_ingest: "DT-EDA - Dynatrace Events Ingest"
+cred_dt_events_ingest_type: "DT-EDA - Dynatrace Events Ingest"
 # EDA-side (EDA keeps its own credential/project stores, separate from controller_*)
 eda_project_name: "DT-EDA"
 eda_decision_environment: "DT-EDA - DE"

@@ -83,7 +83,7 @@ Close the unknowns before building.
 ### Phase 1 — Dynatrace setup  🔄
 - ✅ Create the API token (**Read problems + Write problems**); record the tenant API host (`<env-id>.live`)
 - ⬜ Define a scoping strategy (a dedicated management zone or tag for the pilot)
-- 🔄 Establish a repeatable way to raise a synthetic test problem ([`playbooks/raise_test_problem.yml`](playbooks/raise_test_problem.yml) — needs an `events.ingest` token; tune entity selector vs tenant)
+- 🔄 Establish a repeatable way to raise a synthetic test problem ([`playbooks/raise_test_problem.yml`](playbooks/raise_test_problem.yml) — needs an `events.ingest` token; tune entity selector vs tenant). Launchable from the AAP GUI via the `DT-EDA - Raise Test Problem` JT (survey + `DT-EDA - Dynatrace Events Ingest` credential).
 - ✅ Smoke-test the token: `GET /api/v2/problems` returns 200
 
 **Exit criteria:** token authenticates against the problems API; a test problem can be raised on demand.
@@ -170,6 +170,7 @@ To co-exist safely in a shared AAP instance, namespace objects with a `DT-EDA -`
 | 2026-06-03 | First action = self-contained **`DT-EDA - Notify`** JT          | Notify-only, lowest blast radius; debugs the real event before any remediation is wired |
 | 2026-06-03 | Synthetic problems via **`events.ingest`** CUSTOM_ALERT          | Reliable on-demand test problem ([`playbooks/raise_test_problem.yml`](playbooks/raise_test_problem.yml)); separate token from the rulebook's |
 | 2026-06-03 | Demo rulebook SCM = **public GitHub** (no SCM cred)             | Simplest for APD; customers swap `DT_EDA_SCM_URL` for Bitbucket + an SCM credential |
+| 2026-06-04 | Synthetic problem also launchable from the **AAP GUI** (`DT-EDA - Raise Test Problem` JT) | Demos/operators without shell can trigger the loop in-platform; a custom credential type injects the events.ingest token as env vars so the existing playbook is reused unchanged ([#12](https://github.com/ericcames/aap.eda.dynatrace/issues/12)) |
 
 ---
 

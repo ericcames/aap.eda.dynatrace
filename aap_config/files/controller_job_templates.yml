@@ -21,3 +21,53 @@ controller_templates:
     playbook: playbooks/notify_problem.yml
     # The rulebook passes the event fields as extra_vars; allow them through.
     ask_variables_on_launch: true
+
+  # GUI-launchable trigger (ROADMAP Phase 1): raise a synthetic Dynatrace problem
+  # straight from the AAP Launch button — the in-platform equivalent of running
+  # playbooks/raise_test_problem.yml from a control node, for demos and operators
+  # without shell access. The attached DT-EDA - Dynatrace Events Ingest credential
+  # injects DT_API_HOST + DT_API_EVENT_TOKEN as env vars, so there's no need to
+  # source docs/dev-environment.sh. The survey lets the operator pick the problem
+  # title (synthetic vs the High Disk Usage demo title), an optional entity
+  # selector, and the auto-expire timeout; survey answers arrive as extra_vars,
+  # which override the playbook's env-lookup defaults.
+  - name: "{{ raise_test_template }}"
+    job_type: run
+    organization: "{{ my_organization }}"
+    inventory: "{{ inventory_name }}"
+    project: "{{ project_name }}"
+    playbook: playbooks/raise_test_problem.yml
+    credentials:
+      - "{{ cred_dt_events_ingest }}"
+    survey_enabled: true
+    survey:
+      name: "DT-EDA - Raise Test Problem"
+      description: "Choose the synthetic Dynatrace problem to raise."
+      spec:
+        - question_name: "Problem title"
+          question_description: >-
+            Title for the synthetic problem. Must contain the rulebook match
+            string (DT_MATCH_TITLE) to fire the loop — both demo defaults do.
+          variable: dt_synthetic_title
+          type: multiplechoice
+          choices:
+            - "DT-EDA Synthetic"
+            - "High Disk Usage"
+          default: "DT-EDA Synthetic"
+          required: true
+        - question_name: "Entity selector (optional)"
+          question_description: >-
+            Optional Dynatrace entity selector to attach the event to, e.g.
+            type(HOST). Leave blank for an environment-level event.
+          variable: dt_entity_selector
+          type: text
+          default: ""
+          required: false
+        - question_name: "Auto-expire (minutes)"
+          question_description: "Minutes before the synthetic problem auto-closes."
+          variable: dt_event_timeout_minutes
+          type: integer
+          default: 15
+          min: 1
+          max: 120
+          required: false

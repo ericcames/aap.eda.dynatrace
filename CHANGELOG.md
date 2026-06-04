@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **GUI trigger** for synthetic problems ([#12](https://github.com/ericcames/aap.eda.dynatrace/issues/12)):
+  a `DT-EDA - Raise Test Problem` Controller job template (with a survey for
+  title / entity selector / auto-expire) launches `playbooks/raise_test_problem.yml`
+  from the AAP UI — the in-platform equivalent of the CLI helper, for demos and
+  operators without shell access. Backed by a new custom Controller credential
+  type `DT-EDA - Dynatrace Events Ingest` that injects `DT_API_HOST` +
+  `DT_API_EVENT_TOKEN` (events.ingest scope) as **env vars**, so the playbook needs
+  no `docs/dev-environment.sh`. CaC: `aap_config/files/controller_credential_types.yml`
+  (new), additions to `controller_credentials.yml` / `controller_job_templates.yml`
+  / `group_vars/all.yml`, wired into `load.yml` + `validate_tasks.yml`. No playbook
+  change (survey answers override the env-lookup defaults as extra_vars).
 - Initial repository scaffold for the Dynatrace → AAP Event-Driven Ansible **pull** integration
 - `ROADMAP.md` — Vision, Guiding Principles, Architecture, Phases 0–7 (seeded from the `automation-topics` planning session), Naming Conventions, Decisions Log, Risks
 - `docs/architecture.md` — network-traffic flow diagrams (Mermaid): topology, ordered sequence, and the pull-vs-push / no-EdgeConnect rationale
