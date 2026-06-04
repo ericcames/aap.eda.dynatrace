@@ -21,8 +21,8 @@ aap_username: "{{ lookup('ansible.builtin.env', 'AAP_CONTROLLER_USERNAME') | def
 aap_password: "{{ lookup('ansible.builtin.env', 'AAP_CONTROLLER_PASSWORD') }}"
 
 # --- Organization -----------------------------------------------------------
-# The shared APD AAP's product-demos org. DT-EDA objects live here, namespaced.
-my_organization: "Ansible Product Demos (APD)"
+# DT-EDA objects live here, namespaced `DT-EDA -`. Override with DT_EDA_ORG.
+my_organization: "{{ lookup('ansible.builtin.env', 'DT_EDA_ORG') | default('IT Service Automation', true) }}"
 
 # --- Private Automation Hub (container registry) -----------------------------
 # For the AAP 2.5+ unified platform the Hub registry is at the same host as the
