@@ -62,7 +62,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `collections/requirements.yml` — pin `dynatrace.event_driven_ansible 1.2.3`
   (certified) and add the `infra.aap_configuration` 4.4.0 CaC collection stack
 - `rulebooks/dynatrace_problems.yml` — notify-only `run_job_template` action with
-  CaC-injected match string + a re-trigger `throttle` (no hard-coded secrets/match)
+  CaC-injected match string + a re-trigger `throttle` (no hard-coded secrets/match);
+  tuned against the verified flat `dt_esa_api` event shape — throttle keyed on
+  `event.problemId`, and richer fields (problemId, displayId, severity, impact,
+  affected entities, management zones) passed to the Notify job
 - `docs/dev-environment.sh.example` — add `DT_API_EVENT_TOKEN` (events.ingest),
   `DT_MATCH_TITLE`, and optional CaC overrides
 - ROADMAP Phases 1–3 advanced to 🔄/✅; Decisions Log rows for CaC, DE delivery,

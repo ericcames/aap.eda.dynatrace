@@ -7,24 +7,38 @@
 # AAP job log so we can observe the real event payload safely before wiring any
 # remediation. Self-contained: localhost, no credentials, no external calls.
 #
-# The rulebook passes these extra_vars (see rulebooks/dynatrace_problems.yml):
-#   dt_problem_title, dt_problem_status, dt_problem_event (the full event dict)
+# The rulebook passes these extra_vars (see rulebooks/dynatrace_problems.yml),
+# all from the verified flat dt_esa_api event shape:
+#   dt_problem_id, dt_problem_display_id, dt_problem_title, dt_problem_status,
+#   dt_problem_severity, dt_problem_impact, dt_problem_affected (list),
+#   dt_problem_zones (list), dt_problem_event (the full event dict)
 # ============================================================================
 - name: Notify on a Dynatrace problem
   hosts: localhost
   gather_facts: false
   connection: local
   vars:
+    dt_problem_id: "(none)"
+    dt_problem_display_id: ""
     dt_problem_title: "(no title provided)"
     dt_problem_status: "(no status provided)"
+    dt_problem_severity: ""
+    dt_problem_impact: ""
+    dt_problem_affected: []
+    dt_problem_zones: []
     dt_problem_event: {}
   tasks:
     - name: Announce the matched problem
       ansible.builtin.debug:
         msg: >-
           DT-EDA notify — Dynatrace problem matched:
-          title='{{ dt_problem_title }}' status='{{ dt_problem_status }}'.
-          This is notify-only (no remediation). See the full event below.
+          [{{ dt_problem_display_id | default('') }}] '{{ dt_problem_title }}'
+          status={{ dt_problem_status }} severity={{ dt_problem_severity }}
+          impact={{ dt_problem_impact }}
+          affected={{ dt_problem_affected | map(attribute='name') | list }}
+          zones={{ dt_problem_zones | map(attribute='name') | list }}
+          problemId={{ dt_problem_id }}.
+          Notify-only (no remediation). Full event below.
 
     - name: Dump the full Dynatrace event for inspection
       ansible.builtin.debug:
