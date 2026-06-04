@@ -54,6 +54,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - DT-EDA objects now live in the **`IT Service Automation`** organization
   (`my_organization`, override via `DT_EDA_ORG`)
+- `DT-EDA` controller project: `scm_update_on_launch: false` — the rulebook/
+  playbooks are stable, so no git re-pull on every Notify launch
 - `collections/requirements.yml` — pin `dynatrace.event_driven_ansible 1.2.3`
   (certified) and add the `infra.aap_configuration` 4.4.0 CaC collection stack
 - `rulebooks/dynatrace_problems.yml` — notify-only `run_job_template` action with

@@ -9,6 +9,9 @@ controller_projects:
     scm_type: git
     scm_url: "{{ dt_eda_scm_url }}"
     scm_branch: "{{ dt_eda_scm_branch }}"
-    scm_update_on_launch: true
+    # No update-on-launch: the rulebook/playbooks are stable, so re-pulling git on
+    # every Notify launch only adds latency. The project syncs on apply (wait:true)
+    # and can be synced manually when the repo changes.
+    scm_update_on_launch: false
     scm_clean: true
     wait: true
