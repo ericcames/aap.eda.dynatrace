@@ -16,6 +16,8 @@ Referenced by [`INSTALL.md`](../INSTALL.md) and [`DEMO.md`](../DEMO.md):
 | `aap-eda-credtype.png` | EDA Credential Type `DT-EDA - Dynatrace API` (inputs + injectors) |
 | `aap-eda-creds.png` | EDA Credentials list showing the `DT-EDA -` credentials |
 | `aap-notify-jt.png` | Controller Job Template `DT-EDA - Notify` (project + playbook) |
+| `aap-raise-test-survey.png` | The `DT-EDA - Raise Test Problem` launch survey (Problem title / Entity selector / Auto-expire) |
+| `aap-raise-test-output.png` | A GUI-launched `DT-EDA - Raise Test Problem` job output showing the ingest `status: OK` |
 | `aap-activation-create.png` | Rulebook Activation create form (`DT-EDA - Problem Remediation`) |
 | `aap-activation-running.png` | Activation list with status **Running** |
 | `dt-problem-open.png` | Dynatrace Problems with the open `DT-EDA Synthetic` problem |

@@ -50,8 +50,11 @@ be built + pushed first (skill `dt-eda-build-de`).
    `AAP_VALIDATE_CERTS` (false), `DT_EDA_ORG` (`IT Service Automation`),
    `AH_HOSTNAME` (gateway host), `DT_EDA_DE_VERSION` (`v1.0.0`), `DT_EDA_DE_IMAGE`
    (PAH copy; set to `quay.io/zigfreed/dt-eda-de:latest` for a Hub-less smoke
-   test), `DT_EDA_SCM_BRANCH` (`main`), `DT_POLL_DELAY` (60). `DT_API_EVENT_TOKEN`
-   is only needed later for the demo (skill `dt-eda-demo`), not for install.
+   test), `DT_EDA_SCM_BRANCH` (`main`), `DT_POLL_DELAY` (60). **`DT_API_EVENT_TOKEN`**
+   (events.ingest scope) is consumed **at apply time** by the `DT-EDA - Dynatrace
+   Events Ingest` credential that backs the `DT-EDA - Raise Test Problem` GUI
+   trigger — export it before applying or that credential is created empty (it's
+   also used by the CLI demo, skill `dt-eda-demo`).
 
 4. **Apply.** Confirm `AAP_HOSTNAME`, then run exports + playbook in one call:
    ```bash
@@ -78,7 +81,9 @@ be built + pushed first (skill `dt-eda-build-de`).
    done.
 
 6. **Report.** Summarize the created objects: Controller `DT-EDA` project +
-   inventory, `DT-EDA - Hub Registry` credential, `DT-EDA - Notify` JT; EDA
+   inventory, `DT-EDA - Hub Registry` credential, `DT-EDA - Notify` JT, the
+   `DT-EDA - Dynatrace Events Ingest` credential type + credential and the
+   `DT-EDA - Raise Test Problem` JT (survey-driven GUI trigger); EDA
    `DT-EDA - Dynatrace API` credential type + credential, `DT-EDA - Controller`
    and `DT-EDA - Hub Registry` credentials, `DT-EDA - DE` decision environment,
    `DT-EDA` project, and `DT-EDA - Problem Remediation` activation (running). Tell

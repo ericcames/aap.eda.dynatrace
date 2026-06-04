@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   (new), additions to `controller_credentials.yml` / `controller_job_templates.yml`
   / `group_vars/all.yml`, wired into `load.yml` + `validate_tasks.yml`. No playbook
   change (survey answers override the env-lookup defaults as extra_vars).
+  Docs/skills caught up to the feature: `docs/INSTALL.md` (manual-UI §5b for the new
+  objects, GUI trigger bullet, events.ingest-at-install note), the `dt-eda-install`
+  and `dt-eda-demo` skills, and two screenshots (`aap-raise-test-survey.png`,
+  `aap-raise-test-output.png`).
 - Initial repository scaffold for the Dynatrace → AAP Event-Driven Ansible **pull** integration
 - `ROADMAP.md` — Vision, Guiding Principles, Architecture, Phases 0–7 (seeded from the `automation-topics` planning session), Naming Conventions, Decisions Log, Risks
 - `docs/architecture.md` — network-traffic flow diagrams (Mermaid): topology, ordered sequence, and the pull-vs-push / no-EdgeConnect rationale
