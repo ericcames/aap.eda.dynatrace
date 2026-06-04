@@ -55,6 +55,12 @@ podman push --authfile ~/.config/containers/auth.json quay.io/zigfreed/dt-eda-de
 podman push --authfile ~/.config/containers/auth.json quay.io/zigfreed/dt-eda-de:latest
 ```
 
+> **Customer (no quay):** push straight to your Private Automation Hub instead —
+> `podman login <pah-host>` then `podman push <pah-host>/dt_eda_de:v1.0.0` (+ `latest`).
+> The image is then already in PAH, so **skip the quay→PAH sync below** and just
+> point the Decision Environment at `<pah-host>/dt_eda_de:v1.0.0` with a Container
+> Registry credential. See [`INSTALL.md`](INSTALL.md#build--push-the-decision-environment).
+
 ## Sync into PAH + register for EDA
 
 Handled by Config-as-Code — no manual UI steps:
