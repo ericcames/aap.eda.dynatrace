@@ -49,10 +49,12 @@ aap.eda.dynatrace/
 │   ├── notify_problem.yml             ← notify-only action (debugs the event)
 │   └── raise_test_problem.yml         ← raise a synthetic problem on demand
 ├── docs/
+│   ├── INSTALL.md          ← setup: manual (UI) + automated (CaC) paths
+│   ├── DEMO.md             ← meeting runbook + in-meeting Claude prompts
 │   ├── architecture.md     ← network-traffic flows (Mermaid)
 │   ├── decision-environment.md        ← DE build/push/PAH-sync runbook
 │   ├── dev-environment.sh.example  ← copy → docs/dev-environment.sh (gitignored)
-│   └── images/
+│   └── images/             ← screenshots (shot list in images/README.md)
 ├── .claude/skills/         ← getting-started skills (dt-eda-build-de/install/demo)
 └── .github/                ← community health files + CI (yamllint + secret-leak guard)
 ```
@@ -68,6 +70,10 @@ the right guardrails:
    objects, sync the DE into PAH, and start the rulebook activation.
 3. **`dt-eda-demo`** — raise a synthetic Dynatrace problem and watch the
    `DT-EDA - Notify` job fire.
+
+Full step-by-step (manual UI **and** automated CaC) is in
+[`docs/INSTALL.md`](docs/INSTALL.md); the meeting/demo runbook (how to trigger +
+observe + talk track + Claude prompts) is in [`docs/DEMO.md`](docs/DEMO.md).
 
 To do it by hand:
 
