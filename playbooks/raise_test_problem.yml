@@ -25,7 +25,10 @@
   vars:
     dt_api_host: "{{ lookup('ansible.builtin.env', 'DT_API_HOST') }}"
     dt_event_token: "{{ lookup('ansible.builtin.env', 'DT_API_EVENT_TOKEN') }}"
-    dt_match_title: "{{ lookup('ansible.builtin.env', 'DT_MATCH_TITLE') | default('DT-EDA Synthetic', true) }}"
+    # Plain title for the synthetic problem — SEPARATE from the rulebook match
+    # regex (DT_MATCH_TITLE), which may be an alternation like
+    # "DT-EDA Synthetic|High Disk Usage". This title just needs to match it.
+    dt_synthetic_title: "{{ lookup('ansible.builtin.env', 'DT_SYNTHETIC_TITLE') | default('DT-EDA Synthetic', true) }}"
     dt_entity_selector: "{{ lookup('ansible.builtin.env', 'DT_TEST_ENTITY_SELECTOR') | default('', true) }}"
     dt_event_timeout_minutes: "{{ lookup('ansible.builtin.env', 'DT_TEST_TIMEOUT') | default('15', true) | int }}"
   tasks:
@@ -44,7 +47,7 @@
           {{
             {
               'eventType': 'CUSTOM_ALERT',
-              'title': dt_match_title ~ ' — ' ~ ('%Y-%m-%d %H:%M:%S' | strftime),
+              'title': dt_synthetic_title ~ ' — ' ~ ('%Y-%m-%d %H:%M:%S' | strftime),
               'timeout': dt_event_timeout_minutes,
               'properties': {
                 'source': 'aap.eda.dynatrace',
@@ -70,7 +73,7 @@
     - name: Show the ingest result (problem opens within a poll cycle)
       ansible.builtin.debug:
         msg: >-
-          Ingested CUSTOM_ALERT '{{ dt_match_title }}'. Result:
+          Ingested CUSTOM_ALERT '{{ dt_synthetic_title }}'. Result:
           {{ dt_ingest.json | default(dt_ingest.content) }}.
           Watch the DT-EDA - Problem Remediation activation and the
           DT-EDA - Notify job template in AAP.

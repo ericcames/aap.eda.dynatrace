@@ -11,8 +11,9 @@ Both produce the same thing: an EDA rulebook activation that polls the Dynatrace
 problems API (outbound only — **no EdgeConnect**) and launches a job when a
 matching problem opens. Architecture: [`architecture.md`](architecture.md).
 
-> Screenshots live in [`images/`](images/); slots below are marked
-> `📷 images/<file>.png`. Replace placeholders as you capture them.
+> Screenshots live in [`images/`](images/) (shot list:
+> [`images/README.md`](images/README.md)). Tenant ids, hostnames, token ids, and
+> IPs are redacted.
 
 ---
 
@@ -28,7 +29,9 @@ matching problem opens. Architecture: [`architecture.md`](architecture.md).
    - **Test-problem token** — scope **Ingest events** (`events.ingest`) — only for
      raising synthetic problems on demand.
    - API host is the **`live`** host: `https://<env-id>.live.dynatrace.com`
-     (not the `apps` UI host). 📷 `images/dt-token-scopes.png`
+     (not the `apps` UI host).
+
+![dt-token-scopes.png](images/dt-token-scopes.png)
 3. A **decision-environment image** containing
    `dynatrace.event_driven_ansible` (the stock DE does **not** have it) — build +
    tag + push it per [Build & push the decision environment](#build--push-the-decision-environment)
@@ -72,7 +75,9 @@ podman run --rm dt-eda-de:latest bash -lc \
 > The image now lives in PAH (Automation Content → Execution Environments). Point
 > the Decision Environment at `<pah-host>/dt_eda_de:v1.0.0` with a Container
 > Registry credential. **Skip** the quay→PAH sync step — the image is already in
-> PAH. 📷 `images/pah-ee-synced.png`
+> PAH.
+
+![pah-ee-synced.png](images/pah-ee-synced.png)
 
 > **This demo — push to public quay**, then PAH syncs it:
 > ```bash
@@ -121,7 +126,9 @@ Mirrors [`dc1.azure`](https://github.com/ericcames/dc1.azure). Full reference:
    `DT_EDA_SCM_BRANCH`, the DE tag with `DT_EDA_DE_VERSION`.
 5. **Verify** — `load.yml` asserts every object; then confirm the activation is
    running (UI: **Automation Decisions → Rulebook Activations →
-   `DT-EDA - Problem Remediation`**, status **Running**). 📷 `images/aap-activation-running.png`
+   `DT-EDA - Problem Remediation`**, status **Running**).
+
+![aap-activation-running.png](images/aap-activation-running.png)
 
 That's it — skip to [Trigger & observe](#trigger--observe).
 
@@ -138,7 +145,9 @@ co-exist in a shared AAP. *(Customer: substitute your org, repo URL, registry.)*
 - Image: your **PAH** path `<pah-host>/dt_eda_de:v1.0.0` (demo:
   `quay.io/zigfreed/dt-eda-de:v1.0.0`)
 - Credential: a **Container Registry** credential for the PAH/private registry
-  (skip only if the image is public). 📷 `images/aap-de-create.png`
+  (skip only if the image is public).
+
+![aap-de-create.png](images/aap-de-create.png)
 
 ### 2. EDA credential type (injects the Dynatrace token into the rulebook)
 **Automation Decisions → Credential Types → Create credential type.**
@@ -161,7 +170,8 @@ co-exist in a shared AAP. *(Customer: substitute your org, repo URL, registry.)*
     DT_API_HOST: "{{ DT_API_HOST }}"
     DT_API_TOKEN: "{{ DT_API_TOKEN }}"
   ```
-  📷 `images/aap-eda-credtype.png`
+
+![aap-eda-credtype.png](images/aap-eda-credtype.png)
 
 ### 3. EDA credentials
 **Automation Decisions → Credentials → Create credential** (×2):
@@ -170,7 +180,9 @@ co-exist in a shared AAP. *(Customer: substitute your org, repo URL, registry.)*
   token.
 - `DT-EDA - Controller` — type **Red Hat Ansible Automation Platform**; Host =
   `https://<your-aap>/api/controller/`, username/password (lets the rulebook
-  launch the job). 📷 `images/aap-eda-creds.png`
+  launch the job).
+
+![aap-eda-creds.png](images/aap-eda-creds.png)
 
 ### 4. EDA project (syncs the rulebook)
 **Automation Decisions → Projects → Create project.**
@@ -183,7 +195,9 @@ co-exist in a shared AAP. *(Customer: substitute your org, repo URL, registry.)*
 fine; the notify playbook runs on localhost).
 **Automation Execution → Templates → Create job template** — `DT-EDA - Notify`,
 project `DT-EDA`, inventory `DT-EDA`, playbook `playbooks/notify_problem.yml`,
-**Prompt on launch → Variables** enabled. 📷 `images/aap-notify-jt.png`
+**Prompt on launch → Variables** enabled.
+
+![aap-notify-jt.png](images/aap-notify-jt.png)
 
 ### 6. Rulebook activation (the polling loop)
 **Automation Decisions → Rulebook Activations → Create rulebook activation.**
@@ -199,7 +213,8 @@ project `DT-EDA`, inventory `DT-EDA`, playbook `playbooks/notify_problem.yml`,
   notify_template: "DT-EDA - Notify"
   ```
 - Enable it. It should reach **Running** within a minute (it pulls the DE).
-  📷 `images/aap-activation-create.png`
+
+![aap-activation-create.png](images/aap-activation-create.png)
 
 ---
 
@@ -218,10 +233,13 @@ the integration by making a problem appear in Dynatrace.
 **Observe (AAP):**
 1. **Automation Decisions → Rulebook Activations → `DT-EDA - Problem Remediation`
    → History/Rule Audit** — the event arrives and the rule fires.
-   📷 `images/aap-rule-audit.png`
+
+![aap-rule-audit.png](images/aap-rule-audit.png)
 2. **Automation Execution → Jobs → `DT-EDA - Notify`** — the launched job; its
    output shows the matched problem (id, title, severity, impact, affected
-   entities). 📷 `images/aap-notify-job-output.png`
+   entities).
+
+![aap-notify-job-output.png](images/aap-notify-job-output.png)
 
 **Optional write-back:** the polling token has Write-problems scope, so a later
 phase can comment/close the Dynatrace problem from the playbook.

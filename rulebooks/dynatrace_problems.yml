@@ -30,6 +30,9 @@
         # proxy: "{{ DT_PROXY }}"  # uncomment if OpenShift egress needs a proxy
   rules:
     - name: Notify on a matching open problem
+      # dt_match_title is a REGEX (injected via the activation). `is search` does a
+      # regex search, so an alternation like "DT-EDA Synthetic|High Disk Usage"
+      # matches the synthetic helper AND the High Disk Usage metric-event problem.
       condition: event.status == "OPEN" and event.title is search(vars.dt_match_title)
       # Re-trigger guard: an OPEN problem is re-emitted on every poll with the SAME
       # event.problemId. Key the throttle on problemId (the canonical unique id) so

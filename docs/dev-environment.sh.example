@@ -24,9 +24,18 @@ export DT_API_TOKEN=REPLACE_ME_DT_API_TOKEN        # scopes: Read problems + Wri
 # SEPARATE token for raising synthetic test problems (playbooks/raise_test_problem.yml).
 # Scope: Ingest events (events.ingest) ONLY — keep it distinct from the rulebook token.
 export DT_API_EVENT_TOKEN=REPLACE_ME_DT_EVENT_TOKEN
-# The rulebook matches OPEN problems whose title contains this string; the
-# synthetic problem uses it too. Override to demo a different match.
-export DT_MATCH_TITLE="DT-EDA Synthetic"
+
+# OPTIONAL — only to configure/verify Dynatrace metric events via the Settings API
+# (e.g. the High Disk Usage event for demo method B). Scopes: settings.read +
+# settings.write. Leave as-is if you don't manage settings from here.
+# export DT_API_SETTINGS_TOKEN=REPLACE_ME_DT_SETTINGS_TOKEN
+
+# Rulebook match is a REGEX (the condition uses `is search`). Use an alternation to
+# match several problem types, e.g. the synthetic helper AND a real metric event.
+export DT_MATCH_TITLE="DT-EDA Synthetic|High Disk Usage"
+# Plain title the synthetic helper gives its problem — kept SEPARATE from the regex
+# so DT_MATCH_TITLE can be an alternation without polluting the synthetic title.
+export DT_SYNTHETIC_TITLE="DT-EDA Synthetic"
 # export DT_TEST_ENTITY_SELECTOR='type(HOST)'  # only if env-level CUSTOM_ALERT won't open a problem
 
 # --- AAP (dev = Ansible Product Demos, 2.6) --------------------------------

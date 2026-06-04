@@ -33,15 +33,24 @@ ansible-playbook playbooks/raise_test_problem.yml
 ```
 Ingests a `CUSTOM_ALERT` (events.ingest token). A problem opens immediately whose
 title contains `DT_MATCH_TITLE` ("DT-EDA Synthetic"). Each run is a unique problem,
-so it fires every time. 📷 `images/dt-problem-open.png`
+so it fires every time.
+
+![dt-problem-open.png](images/dt-problem-open.png)
 
 ### B. Real metric-event threshold (the production story)
-Pre-configure once, then trip it live to show Davis opening a *real* problem:
-- Dynatrace → **Settings → Anomaly detection → Metric events** → add an event on a
-  metric you can move (e.g. a host CPU/custom metric) with a low threshold and a
-  title containing your match string. 📷 `images/dt-metric-event.png`
-- During the demo, drive the metric past the threshold (load generator / manual
-  change). Davis opens a problem within a minute → the same loop fires.
+A **High Disk Usage** metric event is already configured in the tenant
+(Dynatrace → **Settings → Anomaly detection → Metric events**):
+- Metric `builtin:host.disk.usedPct`, **static threshold > 80%** (3 of 5 samples).
+- Problem title **`High Disk Usage on {entityname}`** — the rulebook regex
+  (`DT_MATCH_TITLE = "DT-EDA Synthetic|High Disk Usage"`) matches it, so a real
+  disk problem fires the same `DT-EDA - Notify` loop.
+
+![dt-metric-event.png](images/dt-metric-event.png)
+- **To trip it live** you need a OneAgent-monitored host whose disk you can push
+  past 80%. The dc1.azure-built hosts aren't registered in Dynatrace yet — tracked
+  in **[dc1.azure#1](https://github.com/ericcames/dc1.azure/issues/1)** (add
+  OneAgent during provisioning). Until then, use **A** to fire live and present
+  **B** as the production path.
 - Talking point: pull works identically whether the problem is synthetic or a real
   Davis-detected one — AAP just polls the problems API.
 
@@ -54,11 +63,13 @@ Pre-configure once, then trip it live to show Davis opening a *real* problem:
 
 1. **Automation Decisions → Rulebook Activations → `DT-EDA - Problem Remediation`
    → History** (and **Rule Audit**) — the event arrived and the rule matched.
-   📷 `images/aap-rule-audit.png`
+
+![aap-rule-audit.png](images/aap-rule-audit.png)
 2. **Automation Execution → Jobs → `DT-EDA - Notify`** — the launched job. Open its
    output: it prints the matched problem — **display id, title, status, severity,
    impact, affected entities, problem id** — then the full event.
-   📷 `images/aap-notify-job-output.png`
+
+![aap-notify-job-output.png](images/aap-notify-job-output.png)
 3. Tie it back: Dynatrace problem → `dt_esa_api` poll (outbound 443) → rulebook
    condition → `run_job_template` → job. No inbound, no EdgeConnect.
 

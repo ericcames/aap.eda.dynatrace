@@ -40,6 +40,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   metric-event threshold), the AAP observe-walkthrough, talk track, and
   copy-paste prompts for the Claude running the demo
 - `docs/images/README.md` — screenshot shot list (slots referenced by the docs)
+- 13 setup/demo screenshots under `docs/images/` (token scopes, PAH EE, the AAP
+  objects, rule audit, notify job, problem, metric event), embedded into
+  `INSTALL.md`/`DEMO.md`; tenant ids/hostnames/token ids/IPs redacted
 - Getting-started Claude Code skills under `.claude/skills/`: `dt-eda-build-de`
   (build + push the decision environment), `dt-eda-install` (apply `load.yml`),
   and `dt-eda-demo` (raise a synthetic problem and watch the loop fire)
@@ -76,6 +79,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   tuned against the verified flat `dt_esa_api` event shape — throttle keyed on
   `event.problemId`, and richer fields (problemId, displayId, severity, impact,
   affected entities, management zones) passed to the Notify job
+- Match is now a **regex** (`event.title is search`); default
+  `DT_MATCH_TITLE = "DT-EDA Synthetic|High Disk Usage"` so the synthetic helper AND
+  a real **High Disk Usage** metric-event problem both fire the loop (demo method
+  B). Synthetic problem title decoupled into `DT_SYNTHETIC_TITLE`. Added optional
+  `DT_API_SETTINGS_TOKEN` (settings scope) for managing the metric event via API.
+  Live-trigger on real hosts tracked in dc1.azure#1 (OneAgent at provisioning)
 - `docs/dev-environment.sh.example` — add `DT_API_EVENT_TOKEN` (events.ingest),
   `DT_MATCH_TITLE`, and optional CaC overrides
 - ROADMAP Phases 1–3 advanced to 🔄/✅; Decisions Log rows for CaC, DE delivery,
