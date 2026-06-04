@@ -40,10 +40,12 @@ ansible-playbook -i aap_config/inventory/ aap_config/validate.yml
 
 ## Auth
 
-`load.yml` / `validate.yml` mint a short-lived **write** token from
-`AAP_CONTROLLER_USERNAME` / `AAP_CONTROLLER_PASSWORD` and delete it in `always:`
-— no stored token to go stale. Export `AAP_TOKEN` only for an SSO/MFA AAP where
-username/password minting is blocked (it is then used as-is and never deleted).
+`load.yml` / `validate.yml` authenticate with **`AAP_CONTROLLER_USERNAME` /
+`AAP_CONTROLLER_PASSWORD`** (basic auth). Nothing is stored. We do *not* mint an
+OAuth token here: the certified `ansible.eda` 2.5.0 modules used by
+`infra.aap_configuration`'s EDA roles do **not** accept `controller_token`, so a
+token makes them fail (`Unsupported parameters: controller_token`). Username/
+password works for both the Controller and EDA roles.
 
 ## Customer note (Bitbucket)
 

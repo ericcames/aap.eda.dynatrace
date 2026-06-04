@@ -19,8 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `.yamllint` lint config
 - **Configuration as Code** under `aap_config/` (mirrors `dc1.azure`): `load.yml` /
   `validate.yml` apply + verify every `DT-EDA -` object via
-  `infra.aap_configuration.dispatch`, with a self-managing short-lived token
-  (`tasks/aap_token_*.yml`) and `validate_tasks.yml` post-apply assertions
+  `infra.aap_configuration.dispatch` (username/password auth) with
+  `validate_tasks.yml` post-apply assertions
 - `aap_config/files/*` CaC data: Hub EE registry/repository sync, Controller
   project/inventory/credential/`DT-EDA - Notify` JT, and the EDA credential type,
   credentials, decision environment, project, and `DT-EDA - Problem Remediation`
@@ -35,6 +35,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `docs/decision-environment.md` — DE build/push/PAH-sync runbook
 
 ### Fixed
+- `aap_config/` — live bring-up against APD AAP 2.6 surfaced certified
+  `ansible.eda` 2.5.0 incompatibilities with `infra.aap_configuration` 4.4.0's
+  EDA roles; resolved so `load.yml` runs clean end-to-end and the activation fires:
+  - auth switched from a minted OAuth token to **username/password** (the EDA
+    modules reject `controller_token`); removed `aap_config/tasks/aap_token_*.yml`
+  - dropped `scm_branch` from the EDA project (module has no such field; EDA syncs
+    the repo default branch)
+  - `load.yml` now attaches the registry credential to the decision environment via
+    the EDA API and restarts the activation (the `decision_environment` module
+    silently ignores its `credential` arg, so the DE couldn't pull from PAH)
 - `decision-environment.yml` — make the DE actually build on `de-minimal-rhel9`:
   exclude `systemd-python` from reinstall (the base copy is fine; it can't rebuild
   in the de-minimal builder stage), and reassert the `python3` alternative to 3.12
