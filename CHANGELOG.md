@@ -33,6 +33,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `playbooks/raise_test_problem.yml` — raise a synthetic problem on demand via the
   Dynatrace Events API v2 (`events.ingest` token)
 - `docs/decision-environment.md` — DE build/push/PAH-sync runbook
+- Getting-started Claude Code skills under `.claude/skills/`: `dt-eda-build-de`
+  (build + push the decision environment), `dt-eda-install` (apply `load.yml`),
+  and `dt-eda-demo` (raise a synthetic problem and watch the loop fire)
 
 ### Fixed
 - `aap_config/` — live bring-up against APD AAP 2.6 surfaced certified

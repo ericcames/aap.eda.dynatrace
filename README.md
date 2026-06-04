@@ -36,25 +36,49 @@ aap.eda.dynatrace/
 ├── CONTRIBUTING.md
 ├── ansible.cfg.example     ← Hub galaxy_server template → ~/.ansible.cfg
 ├── collections/
-│   └── requirements.yml    ← dynatrace.event_driven_ansible
+│   └── requirements.yml    ← dynatrace.event_driven_ansible 1.2.3 + CaC stack
+├── decision-environment.yml          ← ansible-builder DE def (dt_esa_api source)
+├── decision-environment-requirements.yml
+├── aap_config/             ← Configuration as Code (infra.aap_configuration)
+│   ├── load.yml / validate.yml        ← apply + verify all DT-EDA objects
+│   ├── group_vars/all.yml             ← connection, names, org, secrets-by-ref
+│   └── files/*.yml                    ← Hub/Controller/EDA object data
 ├── rulebooks/
-│   └── dynatrace_problems.yml  ← dt_esa_api poll → remediation (scaffold, Phase 3)
+│   └── dynatrace_problems.yml  ← dt_esa_api poll → notify-only (Phase 3)
+├── playbooks/
+│   ├── notify_problem.yml             ← notify-only action (debugs the event)
+│   └── raise_test_problem.yml         ← raise a synthetic problem on demand
 ├── docs/
 │   ├── architecture.md     ← network-traffic flows (Mermaid)
+│   ├── decision-environment.md        ← DE build/push/PAH-sync runbook
 │   ├── dev-environment.sh.example  ← copy → docs/dev-environment.sh (gitignored)
 │   └── images/
+├── .claude/skills/         ← getting-started skills (dt-eda-build-de/install/demo)
 └── .github/                ← community health files + CI (yamllint + secret-leak guard)
 ```
 
 ## Getting started
 
-This repo is in early setup — most build steps live in [`ROADMAP.md`](ROADMAP.md)
-(Phases 0–7). The development loop:
+The fastest path is the three repo-based **Claude Code skills** (in
+[`.claude/skills/`](.claude/skills/)), which drive each step interactively with
+the right guardrails:
+
+1. **`dt-eda-build-de`** — build the decision environment and push it to quay.io.
+2. **`dt-eda-install`** — apply `aap_config/load.yml`: create the Controller + EDA
+   objects, sync the DE into PAH, and start the rulebook activation.
+3. **`dt-eda-demo`** — raise a synthetic Dynatrace problem and watch the
+   `DT-EDA - Notify` job fire.
+
+To do it by hand:
 
 1. Seed your Hub token: `cp ansible.cfg.example ~/.ansible.cfg` and fill in the offline token.
 2. Create your local secrets file: `cp docs/dev-environment.sh.example docs/dev-environment.sh` and fill in the Dynatrace tenant + token and the AAP connection. **Never commit it** — it's gitignored.
-3. Install the collection: `ansible-galaxy collection install -r collections/requirements.yml`.
-4. Iterate on [`rulebooks/dynatrace_problems.yml`](rulebooks/dynatrace_problems.yml) — start notify-only (Phase 3).
+3. Install collections: `ansible-galaxy collection install -r collections/requirements.yml`.
+4. Build + push the DE — see [`docs/decision-environment.md`](docs/decision-environment.md).
+5. Apply: `source docs/dev-environment.sh && ansible-playbook -i aap_config/inventory/ aap_config/load.yml` (see [`aap_config/README.md`](aap_config/README.md)).
+6. Demo: `ansible-playbook playbooks/raise_test_problem.yml`.
+
+Background and phase status live in [`ROADMAP.md`](ROADMAP.md) (Phases 0–7).
 
 ## Development environment
 
