@@ -11,7 +11,7 @@ objects in AAP via the upstream
 | Layer | Objects |
 |-------|---------|
 | Hub   | `quay_io` remote registry → `dt_eda_de` EE repo (synced from quay.io) |
-| Controller | `DT-EDA` project (this repo) · `DT-EDA` inventory · `DT-EDA - Hub Registry` credential · `DT-EDA - Notify` job template |
+| Controller | `DT-EDA` project (this repo) · `DT-EDA` inventory · `DT-EDA - Hub Registry` credential · `DT-EDA - Dynatrace Events Ingest` credential type + credential · `DT-EDA - Notify` job template · `DT-EDA - Raise Test Problem` job template (GUI trigger, with survey) |
 | EDA   | `DT-EDA - Dynatrace API` credential type + credential · `DT-EDA - Controller` credential · `DT-EDA - Hub Registry` credential · `DT-EDA - DE` decision environment · `DT-EDA` project · `DT-EDA - Problem Remediation` rulebook activation |
 
 ## Prerequisites
@@ -20,7 +20,8 @@ objects in AAP via the upstream
    [`docs/decision-environment.md`](../docs/decision-environment.md). `load.yml`
    drives the **PAH sync** of it.
 2. Secrets exported: `source docs/dev-environment.sh` (AAP creds + `DT_API_HOST`
-   / `DT_API_TOKEN`). See [`docs/dev-environment.sh.example`](../docs/dev-environment.sh.example).
+   / `DT_API_TOKEN`, plus `DT_API_EVENT_TOKEN` for the GUI trigger credential).
+   See [`docs/dev-environment.sh.example`](../docs/dev-environment.sh.example).
 3. Collections installed:
    `ansible-galaxy collection install -r collections/requirements.yml`.
 

@@ -35,6 +35,13 @@ Ingests a `CUSTOM_ALERT` (events.ingest token). A problem opens immediately whos
 title contains `DT_MATCH_TITLE` ("DT-EDA Synthetic"). Each run is a unique problem,
 so it fires every time.
 
+**From the AAP GUI (no shell):** **Automation Execution → Templates →
+`DT-EDA - Raise Test Problem` → Launch**. It runs the same playbook; the attached
+`DT-EDA - Dynatrace Events Ingest` credential supplies the host + events.ingest
+token, and the survey lets you pick the title (synthetic vs **High Disk Usage**),
+an optional entity selector, and the auto-expire timeout. Demoing the trigger
+itself from inside AAP keeps the whole loop on one screen.
+
 ![dt-problem-open.png](images/dt-problem-open.png)
 
 ### B. Real metric-event threshold (the production story)

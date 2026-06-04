@@ -21,10 +21,16 @@
         names: ["{{ project_name }}"]
       - endpoint: inventories
         names: ["{{ inventory_name }}"]
+      - endpoint: credential_types
+        names: ["{{ cred_dt_events_ingest_type }}"]
       - endpoint: credentials
-        names: ["{{ cred_hub_registry }}"]
+        names:
+          - "{{ cred_hub_registry }}"
+          - "{{ cred_dt_events_ingest }}"
       - endpoint: job_templates
-        names: ["{{ notify_template }}"]
+        names:
+          - "{{ notify_template }}"
+          - "{{ raise_test_template }}"
     eda_expected:
       - endpoint: projects
         names: ["{{ eda_project_name }}"]
