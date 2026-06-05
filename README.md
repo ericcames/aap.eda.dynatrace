@@ -95,8 +95,10 @@ Background and phase status live in [`ROADMAP.md`](ROADMAP.md) (Phases 0–7).
 
 | Resource | Role |
 |----------|------|
+| [aap.eda.dynatrace.push](https://github.com/ericcames/aap.eda.dynatrace.push) | **Push model** counterpart (Dynatrace Workflows → AAP Event Streams) |
 | [Dynatrace/Dynatrace-EventDrivenAnsible](https://github.com/Dynatrace/Dynatrace-EventDrivenAnsible) | The `dt_esa_api` / `dt_webhook` source collection (verified source of truth) |
 | [dynatrace/event_driven_ansible (Red Hat Catalog)](https://catalog.redhat.com/en/software/collection/dynatrace/event_driven_ansible) | Certified collection on Automation Hub |
+| [dynatrace-oss/dtctl](https://github.com/dynatrace-oss/dtctl) | Dynatrace CLI for CaC (used by the push repo) |
 | Dynatrace EdgeConnect docs | https://docs.dynatrace.com/docs/ingest-from/edgeconnect (inbound-only; why pull avoids it) |
 
 ## License
