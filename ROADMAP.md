@@ -189,6 +189,7 @@ To co-exist safely in a shared AAP instance, namespace objects with a `DT-EDA -`
 
 | Repo | Role |
 |------|------|
+| [aap.eda.dynatrace.push](https://github.com/ericcames/aap.eda.dynatrace.push) | Push model counterpart (Dynatrace Workflows → AAP Event Streams) |
 | [Dynatrace/Dynatrace-EventDrivenAnsible](https://github.com/Dynatrace/Dynatrace-EventDrivenAnsible) | Source of truth for `dt_esa_api` args + event shape |
 | [dc1.azure](https://github.com/ericcames/dc1.azure) | Convention template (ROADMAP shape, secrets pattern, lint, CLAUDE.md) |
 | [aap.as.code](https://github.com/ericcames/aap.as.code) | AAP bootstrap / CaC patterns |
